@@ -2,7 +2,7 @@
 
 > **"A lens into every cloud service you use."**
 >
-> Cloudlens is a developer intelligence platform that scans GitHub repos, detects third-party services, tracks costs, warns about expiring/forgotten services, and provides AI-powered recommendations — all from a single dashboard.
+> Cloudlens is a developer intelligence platform that explicitly asks for **read-only access to private repositories** to scan codebase files, detect third-party services, track costs, warn about expiring/forgotten services, and provide AI-powered recommendations — all from a single dashboard.
 
 ---
 
@@ -240,7 +240,7 @@ CREATE TABLE service_embeddings (
 ```
 Week 1: Foundation
 ├── Next.js project setup with TypeScript
-├── GitHub OAuth with NextAuth.js
+├── GitHub OAuth with NextAuth.js (Configured for read-only private repo access)
 ├── Database schema + Drizzle ORM setup
 ├── Seed services table with 20 popular services
 └── Basic dashboard layout (shadcn/ui)
