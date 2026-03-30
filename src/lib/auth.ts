@@ -18,6 +18,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       authorization: {
         params: {
+          // Request read-only access to repos
           scope: "read:user user:email repo",
         },
       },
@@ -26,51 +27,57 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "github" && profile) {
-        const githubProfile = profile as Record<string, unknown>;
+        // Store GitHub-specific data
+        const githubProfile = profile as unknown as {
+          id: number;
+          login: string;
+          avatar_url: string;
+        };
+
         try {
-          // Update user with GitHub-specific data
           await db
             .update(users)
             .set({
-              githubId: githubProfile.id as number,
-              username: githubProfile.login as string,
-              image: githubProfile.avatar_url as string,
+              githubId: githubProfile.id,
+              username: githubProfile.login,
+              image: githubProfile.avatar_url,
               githubAccessToken: account.access_token,
               lastLoginAt: new Date(),
             })
             .where(eq(users.email, user.email!));
         } catch {
-          // First sign-in — user may not exist yet, adapter will create it
+          // User might not exist yet on first sign-in, adapter will create them
         }
       }
       return true;
     },
     async session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
-        // Fetch extra fields
-        const dbUser = await db
-          .select({
-            username: users.username,
-            plan: users.plan,
-            githubId: users.githubId,
-          })
-          .from(users)
-          .where(eq(users.id, user.id))
-          .limit(1);
+      // Fetch full user data including GitHub token
+      const [dbUser] = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          plan: users.plan,
+          githubAccessToken: users.githubAccessToken,
+          githubId: users.githubId,
+        })
+        .from(users)
+        .where(eq(users.id, user.id))
+        .limit(1);
 
-        if (dbUser.length > 0) {
-          (session.user as Record<string, unknown>).username = dbUser[0].username;
-          (session.user as Record<string, unknown>).plan = dbUser[0].plan;
-          (session.user as Record<string, unknown>).githubId = dbUser[0].githubId;
-        }
+      if (dbUser) {
+        session.user.id = dbUser.id;
+        (session as any).username = dbUser.username;
+        (session as any).plan = dbUser.plan;
+        (session as any).githubAccessToken = dbUser.githubAccessToken;
+        (session as any).githubId = dbUser.githubId;
       }
+
       return session;
     },
   },
   pages: {
-    signIn: "/",
-    error: "/",
+    signIn: "/login",
   },
   session: {
     strategy: "database",
