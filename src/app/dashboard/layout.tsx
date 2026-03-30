@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import {
   Cloud,
   LayoutDashboard,
@@ -9,12 +10,11 @@ import {
   Box,
   Bell,
   DollarSign,
-  Settings,
-  LogOut,
   ChevronLeft,
   ChevronRight,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,7 +24,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useState } from "react";
-import { mockUser, alerts } from "@/lib/mock-data";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -40,10 +39,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const unreadAlerts = alerts.filter((a) => !a.isRead && !a.isDismissed).length;
+  const user = session?.user;
+  const username = (session as any)?.username || user?.name || "User";
+  const plan = (session as any)?.plan || "free";
+  const avatarUrl = user?.image || "";
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -105,15 +108,6 @@ export default function DashboardLayout({
                 )}
                 <item.icon className="w-5 h-5 shrink-0" />
                 {!collapsed && <span>{item.label}</span>}
-                {item.label === "Alerts" && unreadAlerts > 0 && (
-                  <span
-                    className={`${
-                      collapsed ? "absolute -top-1 -right-1" : "ml-auto"
-                    } flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold px-1`}
-                  >
-                    {unreadAlerts}
-                  </span>
-                )}
               </Link>
             );
 
@@ -151,22 +145,31 @@ export default function DashboardLayout({
           {/* User */}
           <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
             <Avatar className="w-8 h-8 shrink-0">
-              <AvatarImage src={mockUser.avatarUrl} />
+              <AvatarImage src={avatarUrl} />
               <AvatarFallback className="bg-indigo/20 text-indigo-light text-xs">
-                {mockUser.username[0].toUpperCase()}
+                {username[0]?.toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {mockUser.username}
-                </p>
+                <p className="text-sm font-medium truncate">{username}</p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {mockUser.plan} plan
+                  {plan} plan
                 </p>
               </div>
             )}
           </div>
+
+          {/* Sign out */}
+          {!collapsed && (
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-red-400 hover:bg-red-400/10 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              <span>Sign out</span>
+            </button>
+          )}
         </div>
       </aside>
 

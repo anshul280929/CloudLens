@@ -45,7 +45,7 @@ export default function LandingPage() {
             </a>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/dashboard">
+            <Link href="/login">
               <Button
                 variant="default"
                 className="bg-gradient-to-r from-indigo to-indigo-light hover:from-indigo-light hover:to-indigo text-white shadow-lg shadow-indigo/25 cursor-pointer"
@@ -80,7 +80,7 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up stagger-3">
-            <Link href="/dashboard">
+            <Link href="/login">
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-indigo to-cyan hover:from-indigo-light hover:to-cyan-light text-white shadow-xl shadow-indigo/30 px-8 h-12 text-base cursor-pointer"
@@ -396,7 +396,7 @@ export default function LandingPage() {
           <p className="text-muted-foreground text-lg mb-8">
             Join thousands of developers who use Cloudlens to keep their tech stack under control.
           </p>
-          <Link href="/dashboard">
+          <Link href="/login">
             <Button
               size="lg"
               className="bg-gradient-to-r from-indigo to-cyan hover:from-indigo-light hover:to-cyan-light text-white shadow-xl shadow-indigo/30 px-8 h-12 text-base cursor-pointer"
