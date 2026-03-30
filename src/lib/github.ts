@@ -1,25 +1,7 @@
 import { Octokit } from "octokit";
-import { db } from "@/lib/db";
-import { accounts } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
 
-/**
- * Get an authenticated Octokit instance for a user
- */
-export async function getOctokit(userId: string): Promise<Octokit> {
-  const account = await db
-    .select({ accessToken: accounts.access_token })
-    .from(accounts)
-    .where(
-      and(eq(accounts.userId, userId), eq(accounts.provider, "github"))
-    )
-    .limit(1);
-
-  if (!account.length || !account[0].accessToken) {
-    throw new Error("No GitHub access token found for user");
-  }
-
-  return new Octokit({ auth: account[0].accessToken });
+export function createGitHubClient(accessToken: string) {
+  return new Octokit({ auth: accessToken });
 }
 
 export interface GitHubRepo {
@@ -33,22 +15,32 @@ export interface GitHubRepo {
   pushed_at: string | null;
 }
 
+export interface GitHubTreeItem {
+  path: string;
+  type: string;
+  sha: string;
+  size?: number;
+}
+
 /**
  * Fetch all repositories for the authenticated user
  */
-export async function fetchUserRepos(octokit: Octokit): Promise<GitHubRepo[]> {
+export async function fetchUserRepos(
+  octokit: Octokit,
+  perPage = 100
+): Promise<GitHubRepo[]> {
   const repos: GitHubRepo[] = [];
   let page = 1;
-  const perPage = 100;
 
   while (true) {
     const { data } = await octokit.rest.repos.listForAuthenticatedUser({
-      sort: "pushed",
-      direction: "desc",
       per_page: perPage,
       page,
-      type: "owner",
+      sort: "pushed",
+      direction: "desc",
     });
+
+    if (data.length === 0) break;
 
     repos.push(
       ...data.map((r) => ({
@@ -66,28 +58,22 @@ export async function fetchUserRepos(octokit: Octokit): Promise<GitHubRepo[]> {
     if (data.length < perPage) break;
     page++;
 
-    // Safety limit: max 500 repos
-    if (repos.length >= 500) break;
+    // Safety limit: max 5 pages (500 repos)
+    if (page > 5) break;
   }
 
   return repos;
 }
 
-export interface FileTreeItem {
-  path: string;
-  type: "blob" | "tree";
-  size?: number;
-}
-
 /**
- * Fetch the file tree for a repository
+ * Fetch the file tree for a repository (recursive)
  */
 export async function fetchRepoTree(
   octokit: Octokit,
   owner: string,
   repo: string,
-  branch: string = "main"
-): Promise<FileTreeItem[]> {
+  branch: string
+): Promise<GitHubTreeItem[]> {
   try {
     const { data } = await octokit.rest.git.getTree({
       owner,
@@ -96,16 +82,20 @@ export async function fetchRepoTree(
       recursive: "true",
     });
 
-    return data.tree
-      .filter((item) => item.type === "blob" || item.type === "tree")
+    return (data.tree || [])
+      .filter((item) => item.type === "blob" && item.path)
       .map((item) => ({
         path: item.path!,
-        type: item.type as "blob" | "tree",
+        type: item.type!,
+        sha: item.sha!,
         size: item.size,
       }));
-  } catch (error) {
-    console.error(`Failed to fetch tree for ${owner}/${repo}:`, error);
-    return [];
+  } catch (error: any) {
+    // Empty repo or access denied
+    if (error.status === 404 || error.status === 409) {
+      return [];
+    }
+    throw error;
   }
 }
 
@@ -117,21 +107,35 @@ export async function fetchFileContent(
   owner: string,
   repo: string,
   path: string,
-  branch: string = "main"
+  branch?: string
 ): Promise<string | null> {
   try {
-    const { data } = await octokit.rest.repos.getContent({
-      owner,
-      repo,
-      path,
-      ref: branch,
-    });
+    const params: any = { owner, repo, path };
+    if (branch) params.ref = branch;
+
+    const { data } = await octokit.rest.repos.getContent(params);
 
     if ("content" in data && data.encoding === "base64") {
       return Buffer.from(data.content, "base64").toString("utf-8");
     }
     return null;
-  } catch {
-    return null;
+  } catch (error: any) {
+    // File not found or too large
+    if (error.status === 404 || error.status === 403) {
+      return null;
+    }
+    throw error;
   }
+}
+
+/**
+ * Rate limit aware wrapper - checks remaining rate limit
+ */
+export async function checkRateLimit(octokit: Octokit) {
+  const { data } = await octokit.rest.rateLimit.get();
+  return {
+    remaining: data.rate.remaining,
+    limit: data.rate.limit,
+    resetAt: new Date(data.rate.reset * 1000),
+  };
 }
