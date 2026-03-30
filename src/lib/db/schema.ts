@@ -8,21 +8,23 @@ import {
   integer,
   decimal,
   jsonb,
-  primaryKey,
   pgEnum,
   uniqueIndex,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // ============ ENUMS ============
 
 export const planEnum = pgEnum("plan", ["free", "pro", "team"]);
+
 export const scanStatusEnum = pgEnum("scan_status", [
   "pending",
   "scanning",
   "completed",
   "failed",
 ]);
+
 export const serviceCategoryEnum = pgEnum("service_category", [
   "database",
   "auth",
@@ -36,6 +38,7 @@ export const serviceCategoryEnum = pgEnum("service_category", [
   "ai",
   "other",
 ]);
+
 export const ruleTypeEnum = pgEnum("rule_type", [
   "dependency",
   "config_file",
@@ -45,17 +48,20 @@ export const ruleTypeEnum = pgEnum("rule_type", [
   "ci_cd",
   "readme",
 ]);
-export const detectedStatusEnum = pgEnum("detected_status", [
-  "active",
-  "inactive",
-  "unconfirmed",
-]);
-export const serviceStatusEnum = pgEnum("service_status_type", [
+
+export const serviceStatusEnum = pgEnum("service_status", [
   "operational",
   "degraded",
   "partial_outage",
   "major_outage",
 ]);
+
+export const detectedServiceStatusEnum = pgEnum("detected_service_status", [
+  "active",
+  "inactive",
+  "unconfirmed",
+]);
+
 export const alertTypeEnum = pgEnum("alert_type", [
   "expiry_warning",
   "inactivity",
@@ -65,23 +71,25 @@ export const alertTypeEnum = pgEnum("alert_type", [
   "security",
   "ai_suggestion",
 ]);
+
 export const alertSeverityEnum = pgEnum("alert_severity", [
   "info",
   "warning",
   "critical",
 ]);
+
 export const costSourceEnum = pgEnum("cost_source", [
   "estimated",
   "api",
   "manual",
 ]);
 
-// ============ AUTH TABLES (NextAuth.js v5 / Auth.js) ============
+// ============ AUTH TABLES (NextAuth.js) ============
 
 export const users = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name", { length: 255 }),
-  email: varchar("email", { length: 255 }).unique(),
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name"),
+  email: text("email").unique(),
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
   // Cloudlens-specific fields
@@ -89,8 +97,8 @@ export const users = pgTable("users", {
   username: varchar("username", { length: 255 }),
   githubAccessToken: text("github_access_token"),
   plan: planEnum("plan").default("free"),
-  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
-  lastLoginAt: timestamp("last_login_at", { mode: "date" }),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastLoginAt: timestamp("last_login_at"),
 });
 
 export const accounts = pgTable(
@@ -99,18 +107,16 @@ export const accounts = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    type: varchar("type", { length: 255 }).notNull(),
-    provider: varchar("provider", { length: 255 }).notNull(),
-    providerAccountId: varchar("provider_account_id", {
-      length: 255,
-    }).notNull(),
+    type: text("type").notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
     refresh_token: text("refresh_token"),
     access_token: text("access_token"),
     expires_at: integer("expires_at"),
-    token_type: varchar("token_type", { length: 255 }),
+    token_type: text("token_type"),
     scope: text("scope"),
     id_token: text("id_token"),
-    session_state: varchar("session_state", { length: 255 }),
+    session_state: text("session_state"),
   },
   (account) => [
     primaryKey({ columns: [account.provider, account.providerAccountId] }),
@@ -118,7 +124,7 @@ export const accounts = pgTable(
 );
 
 export const sessions = pgTable("sessions", {
-  sessionToken: varchar("session_token", { length: 255 }).primaryKey(),
+  sessionToken: text("session_token").primaryKey(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -128,8 +134,8 @@ export const sessions = pgTable("sessions", {
 export const verificationTokens = pgTable(
   "verification_tokens",
   {
-    identifier: varchar("identifier", { length: 255 }).notNull(),
-    token: varchar("token", { length: 255 }).notNull(),
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
     expires: timestamp("expires", { mode: "date" }).notNull(),
   },
   (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
@@ -138,7 +144,7 @@ export const verificationTokens = pgTable(
 // ============ CORE TABLES ============
 
 export const repositories = pgTable("repositories", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -149,14 +155,14 @@ export const repositories = pgTable("repositories", {
   defaultBranch: varchar("default_branch", { length: 100 }).default("main"),
   language: varchar("language", { length: 100 }),
   stars: integer("stars").default(0),
-  lastCommitAt: timestamp("last_commit_at", { mode: "date" }),
-  lastScannedAt: timestamp("last_scanned_at", { mode: "date" }),
+  lastCommitAt: timestamp("last_commit_at"),
+  lastScannedAt: timestamp("last_scanned_at"),
   scanStatus: scanStatusEnum("scan_status").default("pending"),
-  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const services = pgTable("services", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid("id").defaultRandom().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 100 }).unique().notNull(),
   category: serviceCategoryEnum("category").notNull(),
@@ -165,14 +171,14 @@ export const services = pgTable("services", {
   dashboardUrl: text("dashboard_url"),
   statusPageUrl: text("status_page_url"),
   docsUrl: text("docs_url"),
-  color: varchar("color", { length: 7 }),
+  color: varchar("color", { length: 20 }),
   freeTierLimits: jsonb("free_tier_limits"),
   pricingTiers: jsonb("pricing_tiers"),
-  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const serviceDetectionRules = pgTable("service_detection_rules", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid("id").defaultRandom().primaryKey(),
   serviceId: uuid("service_id")
     .notNull()
     .references(() => services.id, { onDelete: "cascade" }),
@@ -182,15 +188,15 @@ export const serviceDetectionRules = pgTable("service_detection_rules", {
   confidenceWeight: decimal("confidence_weight", {
     precision: 3,
     scale: 2,
-  }).notNull(),
+  }).default("0.50"),
   language: varchar("language", { length: 50 }),
-  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const detectedServices = pgTable(
   "detected_services",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").defaultRandom().primaryKey(),
     repoId: uuid("repo_id")
       .notNull()
       .references(() => repositories.id, { onDelete: "cascade" }),
@@ -199,17 +205,22 @@ export const detectedServices = pgTable(
       .references(() => services.id, { onDelete: "cascade" }),
     confidence: decimal("confidence", { precision: 3, scale: 2 }).notNull(),
     detectionDetails: jsonb("detection_details"),
-    firstDetectedAt: timestamp("first_detected_at", {
-      mode: "date",
-    }).defaultNow(),
-    lastSeenAt: timestamp("last_seen_at", { mode: "date" }).defaultNow(),
-    status: detectedStatusEnum("status").default("active"),
+    firstDetectedAt: timestamp("first_detected_at").defaultNow(),
+    lastSeenAt: timestamp("last_seen_at").defaultNow(),
+    status: detectedServiceStatusEnum("status").default("active"),
   },
-  (ds) => [uniqueIndex("repo_service_idx").on(ds.repoId, ds.serviceId)]
+  (table) => [
+    uniqueIndex("detected_services_repo_service_idx").on(
+      table.repoId,
+      table.serviceId
+    ),
+  ]
 );
 
+// ============ MONITORING & ALERTS ============
+
 export const alerts = pgTable("alerts", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -226,17 +237,19 @@ export const alerts = pgTable("alerts", {
   actionUrl: text("action_url"),
   isRead: boolean("is_read").default(false),
   isDismissed: boolean("is_dismissed").default(false),
-  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
+// ============ COST TRACKING ============
+
 export const costEstimates = pgTable("cost_estimates", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  serviceId: uuid("service_id")
-    .notNull()
-    .references(() => services.id, { onDelete: "cascade" }),
+  serviceId: uuid("service_id").references(() => services.id, {
+    onDelete: "set null",
+  }),
   repoId: uuid("repo_id").references(() => repositories.id, {
     onDelete: "set null",
   }),
@@ -246,9 +259,8 @@ export const costEstimates = pgTable("cost_estimates", {
     scale: 2,
   }),
   currency: varchar("currency", { length: 3 }).default("USD"),
-  month: timestamp("month", { mode: "date" }).notNull(),
   source: costSourceEnum("source").default("estimated"),
-  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ============ RELATIONS ============
@@ -262,26 +274,16 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, {
-    fields: [accounts.userId],
-    references: [users.id],
-  }),
+  user: one(users, { fields: [accounts.userId], references: [users.id] }),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
-  user: one(users, {
-    fields: [sessions.userId],
-    references: [users.id],
-  }),
+  user: one(users, { fields: [sessions.userId], references: [users.id] }),
 }));
 
 export const repositoriesRelations = relations(repositories, ({ one, many }) => ({
-  user: one(users, {
-    fields: [repositories.userId],
-    references: [users.id],
-  }),
+  user: one(users, { fields: [repositories.userId], references: [users.id] }),
   detectedServices: many(detectedServices),
-  alerts: many(alerts),
 }));
 
 export const servicesRelations = relations(services, ({ many }) => ({
@@ -314,10 +316,7 @@ export const detectedServicesRelations = relations(
 );
 
 export const alertsRelations = relations(alerts, ({ one }) => ({
-  user: one(users, {
-    fields: [alerts.userId],
-    references: [users.id],
-  }),
+  user: one(users, { fields: [alerts.userId], references: [users.id] }),
   repository: one(repositories, {
     fields: [alerts.repoId],
     references: [repositories.id],
