@@ -2,6 +2,7 @@ import * as React from "react";
 import Link from "next/link";
 import { FeatureCard, TerminalCodeBlock } from "@/components";
 import { FadeIn } from "@/components/FadeIn";
+import { auth } from "@/lib/auth";
 
 // ─── Hero terminal code ────────────────────────────────────────────────────────
 const TERMINAL_CODE = `$ npx cloudlens scan --repo acme-corp/payments-api
@@ -195,7 +196,9 @@ const PLANS = [
 const LOGOS = ["AWS", "GCP", "Azure", "Vercel", "Stripe", "Supabase", "Neon", "Clerk"];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await auth();
+
   return (
     <div className="relative min-h-screen bg-bg text-text selection:bg-accent-glow overflow-x-hidden">
       {/* Ambient glow */}
@@ -235,15 +238,24 @@ export default function LandingPage() {
 
         <FadeIn delay={0.15}>
           <div className="flex flex-col sm:flex-row items-center gap-3 mb-16">
-            <Link
-              href="/api/auth/signin"
-              className="inline-flex items-center gap-2 h-11 px-6 rounded-radius bg-accent text-[#07090e] text-[14px] font-semibold hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_24px_rgba(46,255,160,0.35)] transition-all duration-150"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 1C4.13 1 1 4.13 1 8c0 3.09 2.01 5.71 4.79 6.63.35.06.48-.15.48-.34v-1.2c-1.96.43-2.37-.94-2.37-.94-.32-.81-.78-1.03-.78-1.03-.64-.44.05-.43.05-.43.71.05 1.08.73 1.08.73.63 1.08 1.65.77 2.05.59.06-.46.25-.77.45-.95-1.56-.18-3.2-.78-3.2-3.47 0-.77.27-1.39.72-1.88-.07-.18-.31-.89.07-1.85 0 0 .59-.19 1.92.72A6.7 6.7 0 018 4.8c.6.003 1.2.08 1.77.24 1.33-.91 1.91-.72 1.91-.72.38.97.14 1.68.07 1.86.45.49.72 1.11.72 1.88 0 2.7-1.64 3.29-3.21 3.46.25.22.47.65.47 1.31v1.94c0 .19.13.41.48.34A7.012 7.012 0 0015 8c0-3.87-3.13-7-7-7z" />
-              </svg>
-              Connect GitHub — It&apos;s Free
-            </Link>
+            {session ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 h-11 px-6 rounded-radius bg-accent text-[#07090e] text-[14px] font-semibold hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_24px_rgba(46,255,160,0.35)] transition-all duration-150"
+              >
+                Go to Dashboard →
+              </Link>
+            ) : (
+              <Link
+                href="/api/auth/signin"
+                className="inline-flex items-center gap-2 h-11 px-6 rounded-radius bg-accent text-[#07090e] text-[14px] font-semibold hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_24px_rgba(46,255,160,0.35)] transition-all duration-150"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 1C4.13 1 1 4.13 1 8c0 3.09 2.01 5.71 4.79 6.63.35.06.48-.15.48-.34v-1.2c-1.96.43-2.37-.94-2.37-.94-.32-.81-.78-1.03-.78-1.03-.64-.44.05-.43.05-.43.71.05 1.08.73 1.08.73.63 1.08 1.65.77 2.05.59.06-.46.25-.77.45-.95-1.56-.18-3.2-.78-3.2-3.47 0-.77.27-1.39.72-1.88-.07-.18-.31-.89.07-1.85 0 0 .59-.19 1.92.72A6.7 6.7 0 018 4.8c.6.003 1.2.08 1.77.24 1.33-.91 1.91-.72 1.91-.72.38.97.14 1.68.07 1.86.45.49.72 1.11.72 1.88 0 2.7-1.64 3.29-3.21 3.46.25.22.47.65.47 1.31v1.94c0 .19.13.41.48.34A7.012 7.012 0 0015 8c0-3.87-3.13-7-7-7z" />
+                </svg>
+                Connect GitHub — It&apos;s Free
+              </Link>
+            )}
             <Link
               href="/#how-it-works"
               className="inline-flex items-center gap-1.5 h-11 px-5 rounded-radius border border-border2 text-[14px] text-text2 hover:text-text hover:border-border2 hover:bg-elevated transition-all duration-150"

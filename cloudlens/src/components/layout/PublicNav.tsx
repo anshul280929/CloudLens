@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 function LogoMark() {
   return (
@@ -25,6 +26,7 @@ const NAV_LINKS = [
 export function PublicNav() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const { status } = useSession();
 
   return (
     <header className="sticky top-0 z-30 bg-bg/80 backdrop-blur-sm border-b border-border">
@@ -59,12 +61,21 @@ export function PublicNav() {
 
         {/* CTA */}
         <div className="flex items-center gap-3">
-          <Link
-            href="/api/auth/signin"
-            className="inline-flex items-center gap-1.5 h-8 px-4 rounded-radius bg-accent text-[#07090e] text-[13px] font-semibold hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(46,255,160,0.3)] transition-all duration-150"
-          >
-            Connect GitHub →
-          </Link>
+          {status === "authenticated" ? (
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-1.5 h-8 px-4 rounded-radius bg-accent text-[#07090e] text-[13px] font-semibold hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(46,255,160,0.3)] transition-all duration-150"
+            >
+              Dashboard →
+            </Link>
+          ) : (
+            <Link
+              href="/api/auth/signin"
+              className="inline-flex items-center gap-1.5 h-8 px-4 rounded-radius bg-accent text-[#07090e] text-[13px] font-semibold hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(46,255,160,0.3)] transition-all duration-150"
+            >
+              Connect GitHub →
+            </Link>
+          )}
 
           {/* Mobile hamburger */}
           <button
