@@ -66,23 +66,6 @@ CloudLens is a powerful, unified dashboard that automatically detects, categoriz
    ```
    Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
 
-## 🗺️ Project Roadmap
-
-Development is split into 12 distinct phases:
-- [x] Phase 0: Project Scaffolding & Dev Environment
-- [x] Phase 1: Design System Implementation & Core UI
-- [x] Phase 2: Landing Page
-- [ ] Phase 3: GitHub Integration & Repository Listing
-- [ ] Phase 4: Service Detection Engine
-- [ ] Phase 5: Dashboard Core Pages
-- [ ] Phase 6: Smart Alerts & Notifications
-- [ ] Phase 7: AI-Powered Intelligence
-- [ ] Phase 8: Visual Architecture Map
-- [ ] Phase 9: CLI & GitHub Action
-- [ ] Phase 10: Cost Tracker & Burn Rate
-- [ ] Phase 11: Teams, Gamification & Enterprise
-- [ ] Phase 12: Production Readiness & Launch
-
 ## 📄 License
 
 This project is licensed under the MIT License.

@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { accounts } from "@/db/schema";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   adapter: DrizzleAdapter(db),
   providers: [
     GitHub({
@@ -44,6 +45,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       session.accessToken = token.accessToken as string | undefined;
       return session;
+    },
+
+    /**
+     * Controls where users are redirected after sign-in / sign-out.
+     * Ensures the user lands on /dashboard after successful GitHub auth.
+     */
+    async redirect({ url, baseUrl }) {
+      // If redirecting from root or sign-in pages, send to dashboard
+      if (url === "/" || url === `${baseUrl}/` || url.includes("/api/auth")) {
+        return `${baseUrl}/dashboard`;
+      }
+      // If the url is relative, prefix with baseUrl
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // If the url is on the same origin, allow it
+      if (new URL(url).origin === baseUrl) return url;
+      // Default: send to dashboard
+      return `${baseUrl}/dashboard`;
     },
   },
 });
