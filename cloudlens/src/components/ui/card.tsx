@@ -6,29 +6,35 @@ import { cn } from "@/lib/utils";
 /**
  * CloudLens Design System — Card
  *
- * Base card with --surface background, --border border,
- * --radius-lg border-radius, and hover border-brighten transition.
- *
- * Used as the foundation for RepoCard, AlertCard, FeatureCard, etc.
+ * DESIGN.md elevation system: surface-lift, not shadow-driven.
+ * Level 1: surface-1 + hairline border (default cards)
+ * Level 2: surface-2 + hairline border (featured/hovered)
+ * Level 3: product-chromatic bg (product identity)
  */
 const cardVariants = cva(
   [
-    "bg-surface border border-border rounded-radius-lg",
-    "transition-[border-color] duration-200 ease-out",
+    "rounded-lg border border-[rgba(178,182,189,0.1)]",
+    "transition-[border-color,background-color] duration-200 ease-out",
   ].join(" "),
   {
     variants: {
       variant: {
-        default: "",
+        default: "bg-surface-1",
+        featured: "bg-surface-2 border-hairline",
         interactive:
-          "cursor-pointer hover:border-border2",
-        elevated:
-          "bg-elevated cursor-pointer hover:border-border2 hover:-translate-y-0.5 transition-all duration-200",
+          "bg-surface-1 cursor-pointer hover:border-hairline hover:bg-surface-2",
+        "product-terraform": "bg-product-terraform text-ink",
+        "product-vault": "bg-product-vault text-inverse-ink",
+        "product-waypoint": "bg-product-waypoint text-inverse-ink",
+        "product-consul": "bg-product-consul text-ink",
+        "product-nomad": "bg-product-nomad text-inverse-ink",
+        "product-vagrant": "bg-product-vagrant text-ink",
+        "product-boundary": "bg-product-boundary text-ink",
       },
       padding: {
-        default: "p-5",
+        default: "p-6",
         compact: "p-4",
-        spacious: "p-6",
+        spacious: "p-8",
         none: "",
       },
     },
@@ -84,7 +90,7 @@ const CardTitle = React.forwardRef<
     ref={ref}
     data-slot="card-title"
     className={cn(
-      "font-mono text-[13px] font-medium text-text",
+      "text-card-title text-ink",
       className
     )}
     {...props}
@@ -99,7 +105,7 @@ const CardDescription = React.forwardRef<
   <p
     ref={ref}
     data-slot="card-description"
-    className={cn("text-[13px] text-text2 leading-relaxed", className)}
+    className={cn("text-body text-ink-muted", className)}
     {...props}
   />
 ));
@@ -126,7 +132,7 @@ const CardFooter = React.forwardRef<
     ref={ref}
     data-slot="card-footer"
     className={cn(
-      "flex items-center justify-between pt-3 mt-3.5 border-t border-border",
+      "flex items-center justify-between pt-3 mt-3.5 border-t border-[rgba(178,182,189,0.1)]",
       className
     )}
     {...props}

@@ -6,47 +6,73 @@ import { cn } from "@/lib/utils";
 /**
  * CloudLens Design System — Button
  *
- * Variants: primary | secondary | ghost | danger
+ * Mapped to DESIGN.md button-* component tokens.
+ * Variants: primary | secondary | tertiary | danger | product-terraform | product-vault | product-waypoint
  * Sizes:    default (40px) | sm (34px)
- * Features: loading state with inline spinner, hover lift + glow
  */
 const buttonVariants = cva(
   [
     "group/button inline-flex shrink-0 items-center justify-center gap-[7px]",
-    "font-body text-sm font-medium whitespace-nowrap select-none",
-    "rounded-radius border border-transparent",
+    "text-[14px] font-semibold whitespace-nowrap select-none",
+    "rounded-md border border-transparent",
     "transition-all duration-[160ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
     "outline-none cursor-pointer",
-    "focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+    "focus-visible:ring-2 focus-visible:ring-accent-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas",
     "disabled:pointer-events-none disabled:opacity-50",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0",
   ].join(" "),
   {
     variants: {
       variant: {
+        /* button-primary: white bg, black text */
         primary: [
-          "bg-accent text-[#07090e] border-transparent",
-          "hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_6px_22px_rgba(46,255,160,0.26)]",
-          "active:translate-y-0 active:shadow-none",
+          "bg-inverse-canvas text-inverse-ink border-transparent",
+          "hover:bg-white/90",
+          "active:bg-white/80",
         ].join(" "),
+        /* button-secondary: charcoal bg, white text */
         secondary: [
-          "bg-accent-glow text-accent border-accent-bdr",
-          "hover:bg-[rgba(46,255,160,0.16)]",
-          "active:bg-[rgba(46,255,160,0.12)]",
+          "bg-surface-2 text-ink border-transparent",
+          "hover:bg-surface-3",
+          "active:bg-surface-2",
         ].join(" "),
-        ghost: [
-          "bg-transparent text-text2 border-border2",
-          "hover:text-text hover:border-[rgba(255,255,255,0.18)]",
-          "active:bg-[rgba(255,255,255,0.03)]",
+        /* button-tertiary: ghost on canvas */
+        tertiary: [
+          "bg-transparent text-ink border-hairline",
+          "hover:bg-surface-1 hover:border-surface-3",
+          "active:bg-surface-2",
         ].join(" "),
+        /* danger: semantic error */
         danger: [
-          "bg-[rgba(255,82,82,0.09)] text-red border-[rgba(255,82,82,0.2)]",
-          "hover:bg-[rgba(255,82,82,0.15)]",
-          "active:bg-[rgba(255,82,82,0.2)]",
+          "bg-[rgba(230,43,30,0.09)] text-semantic-error border-[rgba(230,43,30,0.2)]",
+          "hover:bg-[rgba(230,43,30,0.15)]",
+          "active:bg-[rgba(230,43,30,0.2)]",
+        ].join(" "),
+        /* Per-product variants */
+        "product-terraform": [
+          "bg-product-terraform text-ink border-transparent",
+          "hover:opacity-90",
+          "active:opacity-80",
+        ].join(" "),
+        "product-vault": [
+          "bg-product-vault text-inverse-ink border-transparent",
+          "hover:opacity-90",
+          "active:opacity-80",
+        ].join(" "),
+        "product-waypoint": [
+          "bg-product-waypoint text-inverse-ink border-transparent",
+          "hover:opacity-90",
+          "active:opacity-80",
+        ].join(" "),
+        /* Ghost variant for dashboard use */
+        ghost: [
+          "bg-transparent text-ink-muted border-hairline",
+          "hover:text-ink hover:bg-surface-1",
+          "active:bg-surface-2",
         ].join(" "),
       },
       size: {
-        default: "h-10 px-5 text-[14px]",
+        default: "h-10 px-[18px] py-[10px] text-[14px]",
         sm: "h-[34px] px-3.5 text-[13px]",
       },
     },
@@ -57,7 +83,7 @@ const buttonVariants = cva(
   }
 );
 
-/** 16×16 animated spinner SVG matching the design system spec */
+/** 16×16 animated spinner SVG */
 function Spinner({ className }: { className?: string }) {
   return (
     <svg

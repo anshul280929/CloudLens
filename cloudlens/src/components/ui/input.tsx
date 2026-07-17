@@ -6,23 +6,24 @@ import { cn } from "@/lib/utils";
 /**
  * CloudLens Design System — Input
  *
- * Features: Search icon, placeholder styling, accent glow focus ring.
- * Focus effect: box-shadow: 0 0 0 3px var(--accent-glow), border-color: var(--accent-bdr)
+ * Mapped to DESIGN.md text-input + text-input-focused.
+ * surface-1 bg, ink text, body typography, 8px rounded, 10px 14px padding.
+ * Focus: 1px accent-blue outline ring.
  */
 const inputWrapperVariants = cva(
   [
     "flex items-center gap-2",
-    "bg-surface border border-border2 rounded-radius",
-    "px-3.5 h-10",
+    "bg-surface-1 border border-[rgba(178,182,189,0.1)] rounded-md",
+    "px-[14px] h-10",
     "transition-all duration-150 ease-out",
-    "focus-within:border-accent-bdr focus-within:shadow-[0_0_0_3px_var(--accent-glow)]",
+    "focus-within:border-accent-blue focus-within:shadow-[0_0_0_1px_var(--accent-blue)]",
   ].join(" "),
   {
     variants: {
       size: {
-        default: "h-10",
-        sm: "h-[34px] px-3",
-        lg: "h-12 px-4",
+        default: "h-10 py-[10px]",
+        sm: "h-[34px] px-3 py-[7px]",
+        lg: "h-12 px-4 py-[12px]",
       },
     },
     defaultVariants: {
@@ -31,7 +32,7 @@ const inputWrapperVariants = cva(
   }
 );
 
-/** Search magnifying glass icon — matches design system spec */
+/** Search magnifying glass icon */
 function SearchIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -87,7 +88,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       >
         {/* Leading icon slot */}
         {(icon || showSearchIcon) && (
-          <span className="text-text3 group-focus-within:text-accent transition-colors duration-150">
+          <span className="text-ink-subtle group-focus-within:text-accent-blue transition-colors duration-150">
             {icon || <SearchIcon />}
           </span>
         )}
@@ -98,8 +99,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           data-slot="input"
           className={cn(
             "flex-1 bg-transparent border-none outline-none",
-            "text-text font-body text-[14px]",
-            "placeholder:text-text3",
+            "text-ink text-[16px] font-medium",
+            "placeholder:text-ink-subtle",
             "disabled:cursor-not-allowed disabled:opacity-50",
             className
           )}
@@ -108,7 +109,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
         {/* Trailing slot */}
         {trailing && (
-          <span className="text-text3 shrink-0">{trailing}</span>
+          <span className="text-ink-subtle shrink-0">{trailing}</span>
         )}
       </div>
     );

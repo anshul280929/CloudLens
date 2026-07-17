@@ -108,21 +108,18 @@ const STEPS = [
     title: "Connect GitHub",
     description:
       "Sign in with GitHub OAuth in one click. CloudLens securely reads your repos — no tokens stored on our servers.",
-    color: "accent",
   },
   {
     num: "02",
     title: "Scan & Detect",
     description:
       "Our detection engine analyses every file — dependencies, imports, config files, and environment variables — identifying all cloud services.",
-    color: "blue",
   },
   {
     num: "03",
     title: "Monitor & Save",
     description:
       "Receive weekly digests, real-time alerts on outages and expiring tiers, and AI-driven cost-reduction recommendations.",
-    color: "amber",
   },
 ];
 
@@ -200,36 +197,26 @@ export default async function LandingPage() {
   const session = await auth();
 
   return (
-    <div className="relative min-h-screen bg-bg text-text selection:bg-accent-glow overflow-x-hidden">
-      {/* Ambient glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] opacity-40"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 0%, rgba(46,255,160,0.07) 0%, transparent 70%)",
-        }}
-      />
-
+    <div className="relative min-h-screen bg-canvas text-ink overflow-x-hidden">
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-24 flex flex-col items-center text-center">
+      <section className="relative max-w-[1280px] mx-auto px-6 lg:px-12 pt-section pb-section flex flex-col items-center text-center">
         <FadeIn delay={0}>
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono font-medium bg-accent-glow border border-accent-bdr text-accent mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-badge-pulse" />
+          <span className="text-eyebrow inline-flex items-center gap-2 px-[10px] py-[4px] rounded-pill bg-surface-1 border border-[rgba(178,182,189,0.1)] text-ink-muted mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-blue animate-badge-pulse" />
             Now in Beta — Free while we build
           </span>
         </FadeIn>
 
         <FadeIn delay={0.05}>
-          <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08] max-w-3xl mb-6">
+          <h1 className="text-display-xl max-w-4xl mb-6 text-ink">
             A lens into every{" "}
-            <span className="text-accent">cloud service</span>{" "}
+            <span className="text-accent-blue">cloud service</span>{" "}
             you use
           </h1>
         </FadeIn>
 
         <FadeIn delay={0.1}>
-          <p className="text-[17px] text-text2 max-w-xl leading-relaxed mb-10">
+          <p className="text-body-lg text-ink-muted max-w-xl mb-10">
             CloudLens scans your GitHub repos, auto-detects every AWS, Stripe, Supabase,
             and 50+ other services, then keeps you warned about costs, outages, and expiring
             free tiers — from one unified dashboard.
@@ -241,14 +228,14 @@ export default async function LandingPage() {
             {session ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 h-11 px-6 rounded-radius bg-accent text-[#07090e] text-[14px] font-semibold hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_24px_rgba(46,255,160,0.35)] transition-all duration-150"
+                className="inline-flex items-center gap-2 h-10 px-[18px] rounded-md bg-inverse-canvas text-inverse-ink text-[14px] font-semibold hover:bg-white/90 transition-all duration-150"
               >
                 Go to Dashboard →
               </Link>
             ) : (
               <Link
                 href="/api/auth/signin"
-                className="inline-flex items-center gap-2 h-11 px-6 rounded-radius bg-accent text-[#07090e] text-[14px] font-semibold hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_24px_rgba(46,255,160,0.35)] transition-all duration-150"
+                className="inline-flex items-center gap-2 h-10 px-[18px] rounded-md bg-inverse-canvas text-inverse-ink text-[14px] font-semibold hover:bg-white/90 transition-all duration-150"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M8 1C4.13 1 1 4.13 1 8c0 3.09 2.01 5.71 4.79 6.63.35.06.48-.15.48-.34v-1.2c-1.96.43-2.37-.94-2.37-.94-.32-.81-.78-1.03-.78-1.03-.64-.44.05-.43.05-.43.71.05 1.08.73 1.08.73.63 1.08 1.65.77 2.05.59.06-.46.25-.77.45-.95-1.56-.18-3.2-.78-3.2-3.47 0-.77.27-1.39.72-1.88-.07-.18-.31-.89.07-1.85 0 0 .59-.19 1.92.72A6.7 6.7 0 018 4.8c.6.003 1.2.08 1.77.24 1.33-.91 1.91-.72 1.91-.72.38.97.14 1.68.07 1.86.45.49.72 1.11.72 1.88 0 2.7-1.64 3.29-3.21 3.46.25.22.47.65.47 1.31v1.94c0 .19.13.41.48.34A7.012 7.012 0 0015 8c0-3.87-3.13-7-7-7z" />
@@ -258,7 +245,7 @@ export default async function LandingPage() {
             )}
             <Link
               href="/#how-it-works"
-              className="inline-flex items-center gap-1.5 h-11 px-5 rounded-radius border border-border2 text-[14px] text-text2 hover:text-text hover:border-border2 hover:bg-elevated transition-all duration-150"
+              className="inline-flex items-center gap-1.5 h-10 px-[18px] rounded-md bg-surface-2 text-ink text-[14px] font-semibold hover:bg-surface-3 transition-all duration-150"
             >
               See how it works
             </Link>
@@ -272,14 +259,14 @@ export default async function LandingPage() {
 
         {/* Logo strip */}
         <FadeIn delay={0.25} className="mt-14 w-full">
-          <p className="text-[11px] text-text3 font-mono uppercase tracking-widest mb-5">
+          <p className="text-eyebrow text-ink-subtle mb-5">
             Detects services from 50+ providers including
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
             {LOGOS.map((name) => (
               <span
                 key={name}
-                className="font-mono text-[12px] font-medium text-text3 hover:text-text2 transition-colors"
+                className="inline-flex items-center px-3 py-1.5 bg-surface-1 border border-[rgba(178,182,189,0.1)] rounded-sm text-caption text-ink-muted hover:text-ink transition-colors"
               >
                 {name}
               </span>
@@ -289,20 +276,20 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Features ──────────────────────────────────────────────────────── */}
-      <section id="features" className="max-w-5xl mx-auto px-4 sm:px-6 py-24">
+      <section id="features" className="max-w-[1280px] mx-auto px-6 lg:px-12 py-section">
         <FadeIn>
           <div className="text-center mb-12">
-            <span className="inline-block font-mono text-[11px] text-accent uppercase tracking-widest mb-3">
+            <span className="text-eyebrow text-ink-muted mb-3 block">
               Features
             </span>
-            <h2 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight">
+            <h2 className="text-display-md text-ink">
               Everything you need to stay on top of{" "}
-              <span className="text-accent">your cloud</span>
+              <span className="text-accent-blue">your cloud</span>
             </h2>
           </div>
         </FadeIn>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-xl">
           {FEATURES.map((feat, i) => (
             <FadeIn key={feat.title} delay={i * 0.06}>
               <FeatureCard
@@ -318,15 +305,15 @@ export default async function LandingPage() {
       </section>
 
       {/* ── How It Works ──────────────────────────────────────────────────── */}
-      <section id="how-it-works" className="max-w-5xl mx-auto px-4 sm:px-6 py-24 border-t border-border">
+      <section id="how-it-works" className="max-w-[1280px] mx-auto px-6 lg:px-12 py-section border-t border-[rgba(178,182,189,0.1)]">
         <FadeIn>
           <div className="text-center mb-14">
-            <span className="inline-block font-mono text-[11px] text-accent uppercase tracking-widest mb-3">
+            <span className="text-eyebrow text-ink-muted mb-3 block">
               How It Works
             </span>
-            <h2 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight">
+            <h2 className="text-display-md text-ink">
               Up and running in{" "}
-              <span className="text-accent">3 minutes</span>
+              <span className="text-accent-blue">3 minutes</span>
             </h2>
           </div>
         </FadeIn>
@@ -335,33 +322,24 @@ export default async function LandingPage() {
           {/* Connector line (desktop) */}
           <div
             aria-hidden
-            className="hidden md:block absolute top-8 left-[calc(16.67%+16px)] right-[calc(16.67%+16px)] h-px bg-border2"
+            className="hidden md:block absolute top-8 left-[calc(16.67%+16px)] right-[calc(16.67%+16px)] h-px bg-hairline-soft"
           />
 
-          {STEPS.map((step, i) => {
-            const colors: Record<string, string> = {
-              accent: "bg-accent-glow border-accent-bdr text-accent",
-              blue: "bg-[rgba(78,143,255,0.1)] border-[rgba(78,143,255,0.2)] text-blue",
-              amber: "bg-[rgba(245,177,32,0.1)] border-[rgba(245,177,32,0.2)] text-amber",
-            };
-            return (
-              <FadeIn key={step.num} delay={i * 0.1} className="flex flex-col items-center text-center">
-                <div
-                  className={`w-14 h-14 rounded-full border flex items-center justify-center font-mono text-[14px] font-bold mb-5 relative z-10 bg-bg ${colors[step.color]}`}
-                >
-                  {step.num}
-                </div>
-                <h3 className="font-heading text-[18px] font-bold text-text mb-2">{step.title}</h3>
-                <p className="text-[13px] text-text2 leading-relaxed max-w-xs">{step.description}</p>
-              </FadeIn>
-            );
-          })}
+          {STEPS.map((step, i) => (
+            <FadeIn key={step.num} delay={i * 0.1} className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-full border border-[rgba(178,182,189,0.1)] bg-surface-1 flex items-center justify-center text-[14px] font-bold text-ink mb-5 relative z-10">
+                {step.num}
+              </div>
+              <h3 className="text-subhead text-ink mb-2">{step.title}</h3>
+              <p className="text-body-sm text-ink-muted max-w-xs">{step.description}</p>
+            </FadeIn>
+          ))}
         </div>
 
         <FadeIn delay={0.3} className="mt-12 flex justify-center">
           <Link
             href="/api/auth/signin"
-            className="inline-flex items-center gap-2 h-11 px-6 rounded-radius bg-accent text-[#07090e] text-[14px] font-semibold hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_24px_rgba(46,255,160,0.35)] transition-all duration-150"
+            className="inline-flex items-center gap-2 h-10 px-[18px] rounded-md bg-inverse-canvas text-inverse-ink text-[14px] font-semibold hover:bg-white/90 transition-all duration-150"
           >
             Get started for free →
           </Link>
@@ -369,56 +347,56 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Pricing ───────────────────────────────────────────────────────── */}
-      <section id="pricing" className="max-w-5xl mx-auto px-4 sm:px-6 py-24 border-t border-border">
+      <section id="pricing" className="max-w-[1280px] mx-auto px-6 lg:px-12 py-section border-t border-[rgba(178,182,189,0.1)]">
         <FadeIn>
           <div className="text-center mb-14">
-            <span className="inline-block font-mono text-[11px] text-accent uppercase tracking-widest mb-3">
+            <span className="text-eyebrow text-ink-muted mb-3 block">
               Pricing
             </span>
-            <h2 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
+            <h2 className="text-display-md text-ink mb-3">
               Simple, transparent{" "}
-              <span className="text-accent">pricing</span>
+              <span className="text-accent-blue">pricing</span>
             </h2>
-            <p className="text-[15px] text-text2">
+            <p className="text-body text-ink-muted">
               Start free. Upgrade when you need more. No hidden fees.
             </p>
           </div>
         </FadeIn>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-xl">
           {PLANS.map((plan, i) => (
             <FadeIn key={plan.name} delay={i * 0.07}>
               <div
-                className={`relative flex flex-col h-full rounded-[12px] border p-6 transition-colors duration-200 ${
+                className={`relative flex flex-col h-full rounded-lg border p-8 transition-colors duration-200 ${
                   plan.highlighted
-                    ? "border-accent-bdr bg-accent-glow shadow-[0_0_32px_rgba(46,255,160,0.08)]"
-                    : "border-border bg-surface hover:border-border2"
+                    ? "border-hairline bg-surface-2"
+                    : "border-[rgba(178,182,189,0.1)] bg-surface-1 hover:border-hairline"
                 }`}
               >
                 {plan.highlighted && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-accent text-[#07090e]">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-pill text-eyebrow bg-inverse-canvas text-inverse-ink">
                     MOST POPULAR
                   </span>
                 )}
 
                 <div className="mb-5">
-                  <p className="font-mono text-[12px] text-text3 mb-1">{plan.name}</p>
+                  <p className="text-eyebrow text-ink-subtle mb-1">{plan.name}</p>
                   <div className="flex items-baseline gap-1">
-                    <span className="font-heading text-3xl font-extrabold text-text">
+                    <span className="text-headline text-ink">
                       {plan.price}
                     </span>
                     {plan.period && (
-                      <span className="text-[13px] text-text3">{plan.period}</span>
+                      <span className="text-caption text-ink-subtle">{plan.period}</span>
                     )}
                   </div>
-                  <p className="text-[12px] text-text2 mt-1.5">{plan.description}</p>
+                  <p className="text-body-sm text-ink-muted mt-1.5">{plan.description}</p>
                 </div>
 
                 <ul className="flex-1 space-y-2.5 mb-6">
                   {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-2 text-[12px] text-text2">
+                    <li key={feat} className="flex items-start gap-2 text-body-sm text-ink-muted">
                       <svg
-                        className="shrink-0 mt-0.5 text-accent"
+                        className="shrink-0 mt-0.5 text-semantic-success"
                         width="13"
                         height="13"
                         viewBox="0 0 13 13"
@@ -435,17 +413,17 @@ export default async function LandingPage() {
                 {plan.name === "Enterprise" ? (
                   <a
                     href="mailto:sales@cloudlens.dev"
-                    className={`inline-flex items-center justify-center h-9 px-4 rounded-radius text-[13px] font-semibold border transition-all duration-150 border-border2 text-text2 hover:text-text hover:border-border2 hover:bg-elevated`}
+                    className="inline-flex items-center justify-center h-10 px-[18px] rounded-md text-[14px] font-semibold border transition-all duration-150 border-hairline text-ink-muted hover:text-ink hover:bg-surface-2"
                   >
                     {plan.cta}
                   </a>
                 ) : (
                   <Link
                     href="/api/auth/signin"
-                    className={`inline-flex items-center justify-center h-9 px-4 rounded-radius text-[13px] font-semibold transition-all duration-150 ${
+                    className={`inline-flex items-center justify-center h-10 px-[18px] rounded-md text-[14px] font-semibold transition-all duration-150 ${
                       plan.highlighted
-                        ? "bg-accent text-[#07090e] hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(46,255,160,0.3)]"
-                        : "border border-border2 text-text2 hover:text-text hover:bg-elevated"
+                        ? "bg-inverse-canvas text-inverse-ink hover:bg-white/90"
+                        : "border border-hairline text-ink-muted hover:text-ink hover:bg-surface-2"
                     }`}
                   >
                     {plan.cta}
@@ -458,28 +436,20 @@ export default async function LandingPage() {
       </section>
 
       {/* ── CTA Banner ────────────────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 py-24 border-t border-border">
+      <section className="max-w-[1280px] mx-auto px-6 lg:px-12 py-section border-t border-[rgba(178,182,189,0.1)]">
         <FadeIn>
-          <div className="relative rounded-[16px] border border-accent-bdr bg-accent-glow px-8 py-14 text-center overflow-hidden">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-30"
-              style={{
-                background:
-                  "radial-gradient(ellipse at 50% 0%, rgba(46,255,160,0.15) 0%, transparent 60%)",
-              }}
-            />
-            <h2 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight mb-4 relative">
+          <div className="relative rounded-2xl border border-[rgba(178,182,189,0.1)] bg-surface-1 px-8 py-xxl text-center overflow-hidden">
+            <h2 className="text-display-md text-ink mb-4 relative">
               Start monitoring your cloud stack{" "}
-              <span className="text-accent">today</span>
+              <span className="text-accent-blue">today</span>
             </h2>
-            <p className="text-[15px] text-text2 max-w-md mx-auto mb-8 relative">
+            <p className="text-body text-ink-muted max-w-md mx-auto mb-8 relative">
               Join thousands of developers who&apos;ve already stopped paying for services
               they forgot about.
             </p>
             <Link
               href="/api/auth/signin"
-              className="relative inline-flex items-center gap-2 h-11 px-7 rounded-radius bg-accent text-[#07090e] text-[14px] font-semibold hover:bg-[#52ffb4] hover:-translate-y-px hover:shadow-[0_4px_24px_rgba(46,255,160,0.4)] transition-all duration-150"
+              className="relative inline-flex items-center gap-2 h-10 px-[18px] rounded-md bg-inverse-canvas text-inverse-ink text-[14px] font-semibold hover:bg-white/90 transition-all duration-150"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M8 1C4.13 1 1 4.13 1 8c0 3.09 2.01 5.71 4.79 6.63.35.06.48-.15.48-.34v-1.2c-1.96.43-2.37-.94-2.37-.94-.32-.81-.78-1.03-.78-1.03-.64-.44.05-.43.05-.43.71.05 1.08.73 1.08.73.63 1.08 1.65.77 2.05.59.06-.46.25-.77.45-.95-1.56-.18-3.2-.78-3.2-3.47 0-.77.27-1.39.72-1.88-.07-.18-.31-.89.07-1.85 0 0 .59-.19 1.92.72A6.7 6.7 0 018 4.8c.6.003 1.2.08 1.77.24 1.33-.91 1.91-.72 1.91-.72.38.97.14 1.68.07 1.86.45.49.72 1.11.72 1.88 0 2.7-1.64 3.29-3.21 3.46.25.22.47.65.47 1.31v1.94c0 .19.13.41.48.34A7.012 7.012 0 0015 8c0-3.87-3.13-7-7-7z" />

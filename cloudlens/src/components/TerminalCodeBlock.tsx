@@ -17,9 +17,9 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
         const rest = line.substring(2 + cmdPart.length);
         return (
           <div key={index}>
-            <span className="prm text-accent select-none">$</span>{" "}
-            <span className="cmd text-text">{cmdPart}</span>
-            <span className="str text-[#e9a46e]">{rest}</span>
+            <span className="text-accent-blue select-none">$</span>{" "}
+            <span className="text-ink">{cmdPart}</span>
+            <span className="text-product-vault">{rest}</span>
           </div>
         );
       }
@@ -27,7 +27,7 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
       // Divider line
       if (line.startsWith("──")) {
         return (
-          <div key={index} className="cmt text-text3">
+          <div key={index} className="text-ink-subtle">
             {line}
           </div>
         );
@@ -46,10 +46,10 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
           return (
             <div key={index}>
               {beforeCheck}
-              <span className="kw text-accent">✓</span>
+              <span className="text-semantic-success">✓</span>
               {text}
-              <span className="val text-blue">done</span>
-              <span className="cmt text-text3">{rest}</span>
+              <span className="text-accent-blue">done</span>
+              <span className="text-ink-subtle">{rest}</span>
             </div>
           );
         }
@@ -60,9 +60,9 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
             return (
               <div key={index}>
                 {beforeCheck}
-                <span className="kw text-accent">✓</span>
+                <span className="text-semantic-success">✓</span>
                 {afterCheck.substring(0, idx)}
-                <span className="val text-blue">247 files scanned</span>
+                <span className="text-accent-blue">247 files scanned</span>
               </div>
             );
           }
@@ -72,10 +72,10 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
           return (
             <div key={index}>
               {beforeCheck}
-              <span className="kw text-accent">✓</span> Scan complete.{" "}
-              <span className="val text-blue">5 services</span> across{" "}
-              <span className="val text-blue">2 providers</span>.{" "}
-              <span className="cmt text-text3">{afterCheck.substring(afterCheck.indexOf("("))}</span>
+              <span className="text-semantic-success">✓</span> Scan complete.{" "}
+              <span className="text-accent-blue">5 services</span> across{" "}
+              <span className="text-accent-blue">2 providers</span>.{" "}
+              <span className="text-ink-subtle">{afterCheck.substring(afterCheck.indexOf("("))}</span>
             </div>
           );
         }
@@ -83,7 +83,7 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
         return (
           <div key={index}>
             {beforeCheck}
-            <span className="kw text-accent">✓</span>
+            <span className="text-semantic-success">✓</span>
             {afterCheck}
           </div>
         );
@@ -104,9 +104,9 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
           return (
             <div key={index}>
               {"  "}
-              <span className="kw text-accent">{name}</span>
-              <span className="val text-blue">{valText}</span>
-              <span className="cmt text-text3">{cmtText}</span>
+              <span className="text-semantic-success">{name}</span>
+              <span className="text-accent-blue">{valText}</span>
+              <span className="text-ink-subtle">{cmtText}</span>
             </div>
           );
         }
@@ -116,52 +116,17 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
     };
 
     const highlightTypeScript = (codeText: string) => {
-      // Basic regex tokenizer for key-value pairings and strings
       const lines = codeText.split("\n");
       return lines.map((line, i) => {
         const trimmed = line.trim();
         if (trimmed.startsWith("//") || trimmed.startsWith("/*")) {
           return (
-            <div key={i} className="cmt text-text3">
+            <div key={i} className="text-ink-subtle">
               {line}
             </div>
           );
         }
 
-        // Keywords mapping
-        // e.g., "export default", "true", "false"
-        let renderedLine = line;
-        
-        // Find strings in quotes and highlight them
-        const stringRegex = /(["'])(.*?)\1/g;
-        let match;
-        const segments: React.ReactNode[] = [];
-        let lastIdx = 0;
-        
-        // Simple token matching
-        // Export default highlight
-        if (line.includes("export default")) {
-          const idx = line.indexOf("export default");
-          segments.push(line.substring(lastIdx, idx));
-          segments.push(<span key={`kw-${i}`} className="kw text-accent">export default</span>);
-          lastIdx = idx + "export default".length;
-        }
-
-        // Highlight true/false
-        const restLine = line.substring(lastIdx);
-        // Let's replace strings/keys on the remaining line
-        // We will do a basic split by keys and values
-        // E.g. "  repos: ["anshul280929/payment-gateway-simulator"],"
-        // Find keys like repos:, alerts:, etc.
-        const keyPattern = /(\b\w+)\s*:/g;
-        let keyMatch;
-        let tempLine = restLine;
-        
-        // Render simple highlighted text using direct HTML injection for regex simplicity
-        // or a JSX list. Let's do a safe string replacement to HTML.
-        // We can format it safely using dangerouslySetInnerHTML or node assembly.
-        // Node assembly is safer and cleaner in React.
-        
         return (
           <div key={i}>
             {renderTypeScriptLine(line)}
@@ -172,10 +137,6 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
 
     // Safely render TypeScript line with spans
     const renderTypeScriptLine = (line: string) => {
-      // Tokenize the line
-      // Standard token types: comment, keyword, string, key, value/number, default
-      // We can do a sequence of regex replacements and render.
-      // Let's convert to HTML safely. We escape HTML first.
       const escaped = line
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -183,14 +144,14 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
       
       let html = escaped;
       
-      // Strings: '...' or "..."
-      html = html.replace(/(["'])(.*?)\1/g, '<span class="str text-[#e9a46e]">$1$2$1</span>');
+      // Strings
+      html = html.replace(/(["'])(.*?)\1/g, '<span class="text-product-vault">$1$2$1</span>');
       
-      // Keywords: export, default, true, false, const, import, from
-      html = html.replace(/\b(export|default|true|false|const|import|from)\b/g, '<span class="kw text-accent">$1</span>');
+      // Keywords
+      html = html.replace(/\b(export|default|true|false|const|import|from)\b/g, '<span class="text-accent-blue">$1</span>');
       
-      // Properties/Keys: word followed by colon
-      html = html.replace(/\b(\w+)\s*:/g, '<span class="val text-blue">$1</span>:');
+      // Properties/Keys
+      html = html.replace(/\b(\w+)\s*:/g, '<span class="text-ink">$1</span>:');
       
       return <span dangerouslySetInnerHTML={{ __html: html }} />;
     };
@@ -214,22 +175,22 @@ export const TerminalCodeBlock = React.forwardRef<HTMLDivElement, TerminalCodeBl
       <div
         ref={ref}
         className={cn(
-          "code-block bg-code-bg border border-border rounded-radius overflow-hidden mb-3",
+          "bg-surface-1 border border-[rgba(178,182,189,0.1)] rounded-lg overflow-hidden mb-3",
           className
         )}
         {...props}
       >
-        <div className="code-hdr flex items-center px-4 py-[9px] border-b border-border gap-1.5">
-          <div className="cdot w-2.5 h-2.5 rounded-full bg-[#ff5252]" />
-          <div className="cdot w-2.5 h-2.5 rounded-full bg-[#f5b120]" />
-          <div className="cdot w-2.5 h-2.5 rounded-full bg-[#2effa0]" />
+        <div className="flex items-center px-4 py-[9px] border-b border-[rgba(178,182,189,0.1)] gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-semantic-error" />
+          <div className="w-2.5 h-2.5 rounded-full bg-semantic-warning" />
+          <div className="w-2.5 h-2.5 rounded-full bg-semantic-success" />
           {title && (
-            <span className="code-title font-mono text-[11px] text-text3 ml-auto select-none">
+            <span className="text-caption text-ink-subtle ml-auto select-none">
               {title}
             </span>
           )}
         </div>
-        <pre className="code-body p-5 font-mono text-[13px] leading-[1.75] text-text2 overflow-x-auto whitespace-pre">
+        <pre className="p-5 font-mono text-[13px] leading-[1.75] text-ink-muted overflow-x-auto whitespace-pre">
           <code>{renderCode()}</code>
         </pre>
       </div>

@@ -3,36 +3,36 @@ import { cn } from "@/lib/utils";
 
 export interface StatusBarProps extends React.HTMLAttributes<HTMLDivElement> {
   label: string;
-  dotColor?: "accent" | "blue" | "amber" | "red" | "text3" | string;
+  dotColor?: "success" | "warning" | "error" | "blue" | "muted" | string;
   pulse?: boolean;
 }
 
 export const StatusBar = React.forwardRef<HTMLDivElement, StatusBarProps>(
-  ({ className, label, dotColor = "accent", pulse = false, ...props }, ref) => {
-    // Check if dotColor maps to a standard theme color
-    const dotColors = {
-      accent: "bg-accent",
-      blue: "bg-blue",
-      amber: "bg-amber",
-      red: "bg-red",
-      text3: "bg-text3",
+  ({ className, label, dotColor = "success", pulse = false, ...props }, ref) => {
+    // Map to DESIGN.md semantic/product colors
+    const dotColors: Record<string, string> = {
+      success: "bg-semantic-success",
+      warning: "bg-semantic-warning",
+      error: "bg-semantic-error",
+      blue: "bg-accent-blue",
+      muted: "bg-ink-subtle",
     };
 
-    const isThemeColor = dotColors[dotColor as keyof typeof dotColors] !== undefined;
+    const isThemeColor = dotColors[dotColor] !== undefined;
 
     return (
       <div
         ref={ref}
         className={cn(
-          "status-bar inline-flex items-center gap-2 px-3.5 py-1.75 bg-elevated border border-border rounded-[6px] font-mono text-[11px] text-text2 select-none",
+          "inline-flex items-center gap-2 px-3.5 py-[7px] bg-surface-2 border border-[rgba(178,182,189,0.1)] rounded-sm text-caption text-ink-muted select-none",
           className
         )}
         {...props}
       >
         <div
           className={cn(
-            "s-dot w-1.5 h-1.5 rounded-full shrink-0",
-            isThemeColor ? dotColors[dotColor as keyof typeof dotColors] : "",
+            "w-1.5 h-1.5 rounded-full shrink-0",
+            isThemeColor ? dotColors[dotColor] : "",
             pulse && "animate-badge-pulse"
           )}
           style={!isThemeColor ? { backgroundColor: dotColor } : undefined}

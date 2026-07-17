@@ -32,17 +32,17 @@ function Select({
   ...props
 }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <div className="relative flex items-center bg-surface border border-border2 rounded-radius h-10 transition-all duration-150 focus-within:border-accent-bdr focus-within:shadow-[0_0_0_3px_var(--accent-glow)] min-w-[150px]">
+    <div className="relative flex items-center bg-surface-1 border border-[rgba(178,182,189,0.1)] rounded-md h-10 transition-all duration-150 focus-within:border-accent-blue focus-within:shadow-[0_0_0_1px_var(--accent-blue)] min-w-[150px]">
       <select
         className={
-          "bg-transparent border-none outline-none text-text font-body text-[13px] pl-3.5 pr-8 cursor-pointer appearance-none w-full h-full " +
+          "bg-transparent border-none outline-none text-ink text-[14px] font-medium pl-[14px] pr-8 cursor-pointer appearance-none w-full h-full " +
           className
         }
         {...props}
       >
         {children}
       </select>
-      <div className="absolute right-3.5 pointer-events-none text-text3 flex items-center">
+      <div className="absolute right-3.5 pointer-events-none text-ink-subtle flex items-center">
         <svg
           width="10"
           height="6"
@@ -155,7 +155,7 @@ export function RepositoryList({ initialRepos }: RepositoryListProps) {
   return (
     <div className="space-y-6">
       {/* Search and filter toolbar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/40 p-4 rounded-radius border border-border2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-1/40 p-4 rounded-lg border border-[rgba(178,182,189,0.1)]">
         <div className="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Input
             placeholder="Search repositories..."
@@ -239,8 +239,8 @@ export function RepositoryList({ initialRepos }: RepositoryListProps) {
         </div>
       ) : (
         /* Empty State */
-        <div className="flex flex-col items-center justify-center border border-dashed border-border2 rounded-radius-lg p-12 text-center bg-surface/10">
-          <div className="w-12 h-12 rounded-full bg-elevated border border-border2 flex items-center justify-center mb-4 text-text3">
+        <div className="flex flex-col items-center justify-center border border-dashed border-hairline rounded-lg p-12 text-center bg-surface-1/10">
+          <div className="w-12 h-12 rounded-full bg-surface-2 border border-[rgba(178,182,189,0.1)] flex items-center justify-center mb-4 text-ink-subtle">
             <svg
               width="22"
               height="20"
@@ -271,10 +271,10 @@ export function RepositoryList({ initialRepos }: RepositoryListProps) {
               />
             </svg>
           </div>
-          <h3 className="text-[16px] font-mono font-medium text-text mb-2">
+          <h3 className="text-subhead text-ink mb-2">
             No Repositories Connected
           </h3>
-          <p className="text-[14px] text-text3 max-w-sm mb-6 font-body">
+          <p className="text-body-sm text-ink-subtle max-w-sm mb-6">
             {searchQuery || statusFilter !== "all" || languageFilter !== "all"
               ? "No repositories match your active search filters. Try clearing them to see all repos."
               : "Sync your GitHub profile to load public and private repositories, and begin scanning for cloud services."}

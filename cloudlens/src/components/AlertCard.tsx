@@ -26,11 +26,11 @@ export const AlertCard = React.forwardRef<HTMLDivElement, AlertCardProps>(
     },
     ref
   ) => {
-    // Map severity to left border color class
+    // Map severity to left border color using semantic tokens
     const borderColors = {
-      critical: "border-l-red",
-      warning: "border-l-amber",
-      info: "border-l-accent",
+      critical: "border-l-semantic-error",
+      warning: "border-l-semantic-warning",
+      info: "border-l-accent-blue",
     };
 
     // Determine badge variant for the provider
@@ -43,36 +43,36 @@ export const AlertCard = React.forwardRef<HTMLDivElement, AlertCardProps>(
       }
       
       if (lower === "statuspage") {
-        return "scanning"; // Maps to b-warn / amber status dot in the design system
+        return "scanning";
       }
 
-      return "info"; // Fallback to info (blue) for unknown providers
+      return "info";
     };
 
     return (
       <Card
         ref={ref}
         className={cn(
-          "alert-card bg-surface border border-border border-l-[3px] rounded-radius p-4 px-5",
-          borderColors[severity] || "border-l-accent",
+          "bg-surface-1 border border-[rgba(178,182,189,0.1)] border-l-[3px] rounded-md p-4 px-5",
+          borderColors[severity] || "border-l-accent-blue",
           className
         )}
         {...props}
       >
-        <div className="ach flex items-center gap-2 mb-1.5">
+        <div className="flex items-center gap-2 mb-1.5">
           <Badge variant={getBadgeVariant(provider)} size="sm">
             {provider}
           </Badge>
-          <div className="act text-[14px] font-medium text-text font-body">
+          <div className="text-body-sm font-semibold text-ink">
             {title}
           </div>
         </div>
 
-        <div className="acb text-[13px] text-text2 leading-relaxed font-body">
+        <div className="text-body-sm text-ink-muted">
           {description}
         </div>
 
-        <div className="acf mt-3 font-mono text-[11px] text-text3 flex items-center gap-3.5">
+        <div className="mt-3 text-caption text-ink-subtle flex items-center gap-3.5">
           <span>{repoName}</span>
           <span>{timestamp}</span>
         </div>
