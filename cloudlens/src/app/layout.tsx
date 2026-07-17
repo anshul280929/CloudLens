@@ -1,26 +1,12 @@
 import type { Metadata } from "next";
-import { DM_Mono, DM_Sans, Syne } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/SessionProvider";
 
-const syne = Syne({
-  variable: "--ff-d",
+const inter = Inter({
+  variable: "--ff-sans",
   subsets: ["latin"],
-  weight: ["700", "800"],
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
-  variable: "--ff-b",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  display: "swap",
-});
-
-const dmMono = DM_Mono({
-  variable: "--ff-m",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
@@ -53,7 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${dmSans.variable} ${dmMono.variable} h-full antialiased`}
+      className={`${inter.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <SessionProvider>{children}</SessionProvider>

@@ -59,7 +59,7 @@ export const RepoCard = React.forwardRef<HTMLDivElement, RepoCardProps>(
       <Card
         ref={ref}
         variant="interactive"
-        className={cn("repo-card p-5 px-[22px] transition-colors duration-200 cursor-pointer", className)}
+        className={cn("p-6 transition-colors duration-200 cursor-pointer", className)}
         onClick={(e) => {
           if (!isScanning && onViewClick) {
             onViewClick(e);
@@ -67,12 +67,12 @@ export const RepoCard = React.forwardRef<HTMLDivElement, RepoCardProps>(
         }}
         {...props}
       >
-        <CardHeader className="rch flex items-start justify-between mb-3 p-0">
+        <CardHeader className="flex items-start justify-between mb-3 p-0">
           <div>
-            <CardTitle className="rc-name font-mono text-[13px] font-medium text-text">
+            <CardTitle className="text-[14px] font-semibold text-ink">
               {name}
             </CardTitle>
-            <p className="rc-owner text-[12px] text-text3 mt-0.5">{owner}</p>
+            <p className="text-caption text-ink-subtle mt-0.5">{owner}</p>
           </div>
           <Badge variant={status} size="sm">
             {statusLabels[status]}
@@ -80,7 +80,7 @@ export const RepoCard = React.forwardRef<HTMLDivElement, RepoCardProps>(
         </CardHeader>
 
         <CardContent className="p-0">
-          <div className="rc-services flex gap-1.5 flex-wrap mb-3.5">
+          <div className="flex gap-1.5 flex-wrap mb-3.5">
             {services.length > 0 ? (
               services.map((svc) => (
                 <Badge
@@ -92,17 +92,17 @@ export const RepoCard = React.forwardRef<HTMLDivElement, RepoCardProps>(
                 </Badge>
               ))
             ) : (
-              <span className="text-[12px] text-text3 italic">No services detected</span>
+              <span className="text-caption text-ink-subtle italic">No services detected</span>
             )}
           </div>
         </CardContent>
 
-        <CardFooter className="rc-footer flex items-center justify-between pt-3 mt-3.5 border-t border-border p-0">
-          <span className="rc-stat font-mono text-[11px] text-text3">
-            <strong className="text-text2 font-medium">{serviceCount}</strong>{" "}
+        <CardFooter className="flex items-center justify-between pt-3 mt-3.5 border-t border-[rgba(178,182,189,0.1)] p-0">
+          <span className="text-caption text-ink-subtle">
+            <strong className="text-ink-muted font-medium">{serviceCount}</strong>{" "}
             {serviceCount === 1 ? "service" : "services"}
           </span>
-          <span className="rc-stat font-mono text-[11px] text-text3">
+          <span className="text-caption text-ink-subtle">
             {isScanning ? "Running…" : updatedAt}
           </span>
           <Button
@@ -122,7 +122,7 @@ export const RepoCard = React.forwardRef<HTMLDivElement, RepoCardProps>(
 
 RepoCard.displayName = "RepoCard";
 
-// Inline helper CardContent component to keep RepoCard matching card.tsx layout if we want to import it directly
+// Inline helper CardContent component
 function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("rc-content", className)} {...props} />;
+  return <div className={cn("", className)} {...props} />;
 }

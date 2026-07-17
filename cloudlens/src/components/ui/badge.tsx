@@ -6,45 +6,45 @@ import { cn } from "@/lib/utils";
 /**
  * CloudLens Design System — Badge
  *
- * Cloud Provider variants: aws | gcp | azure | vercel | stripe | supabase
- * Scan Status variants:    complete | scanning | failed | never-scanned
- * Generic:                 default | info
+ * Mapped to DESIGN.md product-pill + semantic states.
+ * Product badges use per-product identity colors.
+ * Scan status badges use semantic tokens.
  */
 const badgeVariants = cva(
   [
     "inline-flex items-center gap-[5px]",
-    "px-[10px] py-[4px] rounded-full",
-    "text-[12px] font-medium font-mono leading-none whitespace-nowrap",
+    "px-[10px] py-[4px] rounded-pill",
+    "text-[12px] font-semibold leading-none whitespace-nowrap",
   ].join(" "),
   {
     variants: {
       variant: {
-        /* ── Cloud Providers ── */
-        aws: "bg-[rgba(245,177,32,0.10)] text-[#f5b120] border border-[rgba(245,177,32,0.2)]",
-        gcp: "bg-[rgba(78,143,255,0.10)] text-[#4e8fff] border border-[rgba(78,143,255,0.2)]",
+        /* ── Cloud Providers (product identity) ── */
+        aws: "bg-[rgba(255,207,37,0.10)] text-product-vault border border-[rgba(255,207,37,0.2)]",
+        gcp: "bg-[rgba(43,137,255,0.10)] text-accent-blue border border-[rgba(43,137,255,0.2)]",
         azure:
-          "bg-[rgba(0,144,255,0.10)] text-[#0090ff] border border-[rgba(0,144,255,0.2)]",
+          "bg-[rgba(24,104,242,0.10)] text-product-vagrant border border-[rgba(24,104,242,0.2)]",
         vercel:
-          "bg-[rgba(255,255,255,0.06)] text-text border border-border2",
+          "bg-surface-2 text-ink border border-[rgba(178,182,189,0.1)]",
         stripe:
-          "bg-[rgba(99,91,255,0.10)] text-[#635bff] border border-[rgba(99,91,255,0.2)]",
+          "bg-[rgba(123,66,188,0.10)] text-product-terraform border border-[rgba(123,66,188,0.2)]",
         supabase:
-          "bg-[rgba(62,207,142,0.10)] text-[#3ecf8e] border border-[rgba(62,207,142,0.2)]",
+          "bg-[rgba(0,202,142,0.10)] text-product-nomad border border-[rgba(0,202,142,0.2)]",
 
-        /* ── Scan Status ── */
+        /* ── Scan Status (semantic) ── */
         complete:
-          "bg-accent-glow text-accent border border-accent-bdr",
+          "bg-[rgba(0,202,142,0.10)] text-semantic-success border border-[rgba(0,202,142,0.2)]",
         scanning:
-          "bg-[rgba(245,177,32,0.10)] text-amber border border-[rgba(245,177,32,0.2)]",
+          "bg-[rgba(255,207,37,0.10)] text-semantic-warning border border-[rgba(255,207,37,0.2)]",
         failed:
-          "bg-[rgba(255,82,82,0.09)] text-red border border-[rgba(255,82,82,0.2)]",
+          "bg-[rgba(230,43,30,0.09)] text-semantic-error border border-[rgba(230,43,30,0.2)]",
         "never-scanned":
-          "bg-elevated text-text3 border border-border2",
+          "bg-surface-2 text-ink-subtle border border-[rgba(178,182,189,0.1)]",
 
         /* ── Generic ── */
         default:
-          "bg-accent-glow text-accent border border-accent-bdr",
-        info: "bg-[rgba(78,143,255,0.10)] text-blue border border-[rgba(78,143,255,0.2)]",
+          "bg-surface-1 text-ink-muted border border-[rgba(178,182,189,0.1)]",
+        info: "bg-[rgba(43,137,255,0.10)] text-accent-blue border border-[rgba(43,137,255,0.2)]",
       },
       size: {
         default: "px-[10px] py-[4px] text-[12px]",

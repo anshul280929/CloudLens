@@ -20,7 +20,7 @@ export function DashboardShell({
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-bg">
+    <div className="flex h-screen overflow-hidden bg-canvas">
       {/* Sidebar */}
       <Sidebar
         mobileOpen={mobileOpen}

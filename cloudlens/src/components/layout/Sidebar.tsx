@@ -17,10 +17,10 @@ function LogoMark({ className }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      <rect x="1" y="1" width="8.5" height="8.5" rx="2" fill="var(--accent)" />
-      <rect x="12.5" y="1" width="8.5" height="8.5" rx="2" fill="var(--accent)" opacity="0.6" />
-      <rect x="1" y="12.5" width="8.5" height="8.5" rx="2" fill="var(--accent)" opacity="0.6" />
-      <rect x="12.5" y="12.5" width="8.5" height="8.5" rx="2" fill="var(--accent)" opacity="0.3" />
+      <rect x="1" y="1" width="8.5" height="8.5" rx="2" fill="var(--accent-blue)" />
+      <rect x="12.5" y="1" width="8.5" height="8.5" rx="2" fill="var(--accent-blue)" opacity="0.6" />
+      <rect x="1" y="12.5" width="8.5" height="8.5" rx="2" fill="var(--accent-blue)" opacity="0.6" />
+      <rect x="12.5" y="12.5" width="8.5" height="8.5" rx="2" fill="var(--accent-blue)" opacity="0.3" />
     </svg>
   );
 }
@@ -111,13 +111,13 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
       href={item.href}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2.5 px-3 py-2 rounded-radius text-sm transition-colors duration-150",
+        "flex items-center gap-2.5 px-3 py-2 rounded-md text-body-sm transition-colors duration-150",
         isActive
-          ? "bg-accent-glow text-accent border border-accent-bdr"
-          : "text-text2 hover:text-text hover:bg-elevated border border-transparent"
+          ? "bg-surface-2 text-ink border border-[rgba(178,182,189,0.1)]"
+          : "text-ink-muted hover:text-ink hover:bg-surface-2 border border-transparent"
       )}
     >
-      <span className={cn("flex-shrink-0", isActive ? "text-accent" : "text-text3")}>
+      <span className={cn("flex-shrink-0", isActive ? "text-ink" : "text-ink-subtle")}>
         {item.icon}
       </span>
       {item.label}
@@ -150,7 +150,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         className={cn(
           // Base
           "fixed top-0 left-0 h-full z-40 flex flex-col",
-          "w-56 bg-surface border-r border-border",
+          "w-56 bg-surface-1 border-r border-[rgba(178,182,189,0.1)]",
           // Desktop: always visible
           "md:sticky md:top-0 md:z-auto",
           // Mobile: slide-in drawer
@@ -160,12 +160,9 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         aria-label="Dashboard navigation"
       >
         {/* Logo */}
-        <div className="flex items-center gap-2.5 px-4 py-5 border-b border-border flex-shrink-0">
+        <div className="flex items-center gap-2.5 px-4 py-5 border-b border-[rgba(178,182,189,0.1)] flex-shrink-0">
           <LogoMark />
-          <span
-            className="text-[17px] font-extrabold tracking-tight text-text"
-            style={{ fontFamily: "var(--ff-d)" }}
-          >
+          <span className="text-[17px] font-bold tracking-tight text-ink">
             CloudLens
           </span>
         </div>
@@ -174,7 +171,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
           {NAV_GROUPS.map((group) => (
             <div key={group.title}>
-              <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-text3 font-mono">
+              <p className="text-eyebrow px-3 mb-1.5 text-ink-subtle">
                 {group.title}
               </p>
               <ul className="space-y-0.5">
@@ -189,8 +186,8 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         </nav>
 
         {/* Footer version tag */}
-        <div className="px-5 py-3.5 border-t border-border flex-shrink-0">
-          <span className="font-mono text-[10px] text-text3">CloudLens v1.0.0</span>
+        <div className="px-5 py-3.5 border-t border-[rgba(178,182,189,0.1)] flex-shrink-0">
+          <span className="text-caption text-ink-subtle">CloudLens v1.0.0</span>
         </div>
       </aside>
     </>

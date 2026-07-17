@@ -73,10 +73,10 @@ export function Header({ userName, userImage, onMenuClick }: HeaderProps) {
   const title = usePageTitle();
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-3 h-14 px-4 md:px-6 bg-surface/80 backdrop-blur-sm border-b border-border flex-shrink-0">
+    <header className="sticky top-0 z-20 flex items-center gap-3 h-16 px-4 md:px-6 bg-surface-1/80 backdrop-blur-sm border-b border-[rgba(178,182,189,0.1)] flex-shrink-0">
       {/* Mobile hamburger */}
       <button
-        className="md:hidden flex items-center justify-center w-8 h-8 rounded-radius text-text2 hover:text-text hover:bg-elevated transition-colors"
+        className="md:hidden flex items-center justify-center w-10 h-10 rounded-md text-ink-muted hover:text-ink hover:bg-surface-2 transition-colors"
         onClick={onMenuClick}
         aria-label="Open navigation"
       >
@@ -84,24 +84,24 @@ export function Header({ userName, userImage, onMenuClick }: HeaderProps) {
       </button>
 
       {/* Page title */}
-      <h1 className="text-[15px] font-semibold text-text flex-1 min-w-0 truncate" style={{ fontFamily: "var(--ff-b)" }}>
+      <h1 className="text-[15px] font-semibold text-ink flex-1 min-w-0 truncate">
         {title}
       </h1>
 
       {/* Search */}
-      <div className="hidden sm:flex items-center gap-2 h-8 px-3 rounded-radius bg-elevated border border-border text-text3 text-[13px] font-mono w-44 focus-within:border-accent-bdr focus-within:shadow-[0_0_0_3px_var(--accent-glow)] transition-all">
+      <div className="hidden sm:flex items-center gap-2 h-10 px-[14px] rounded-md bg-surface-1 border border-[rgba(178,182,189,0.1)] text-ink-subtle text-[14px] w-48 focus-within:border-accent-blue focus-within:shadow-[0_0_0_1px_var(--accent-blue)] transition-all">
         <SearchIcon />
         <input
           type="text"
           placeholder="Search repos, services…"
-          className="bg-transparent outline-none w-full text-text placeholder:text-text3 text-[12px] font-body"
+          className="bg-transparent outline-none w-full text-ink placeholder:text-ink-subtle text-[14px]"
           aria-label="Search repositories and services"
         />
       </div>
 
       {/* Notification bell */}
       <button
-        className="flex items-center justify-center w-8 h-8 rounded-radius text-text2 hover:text-text hover:bg-elevated border border-transparent hover:border-border transition-colors"
+        className="flex items-center justify-center w-10 h-10 rounded-md text-ink-muted hover:text-ink hover:bg-surface-2 border border-transparent hover:border-[rgba(178,182,189,0.1)] transition-colors"
         aria-label="Notifications"
       >
         <BellIcon />
@@ -115,13 +115,13 @@ export function Header({ userName, userImage, onMenuClick }: HeaderProps) {
             alt={userName ?? "User avatar"}
             width={28}
             height={28}
-            className="rounded-full border border-border2 flex-shrink-0"
+            className="rounded-full border border-[rgba(178,182,189,0.1)] flex-shrink-0"
           />
         ) : (
-          <div className="w-7 h-7 rounded-full bg-elevated border border-border2 flex-shrink-0" aria-hidden="true" />
+          <div className="w-7 h-7 rounded-full bg-surface-2 border border-[rgba(178,182,189,0.1)] flex-shrink-0" aria-hidden="true" />
         )}
         {userName && (
-          <span className="hidden lg:block text-[13px] text-text2 max-w-[120px] truncate">
+          <span className="hidden lg:block text-body-sm text-ink-muted max-w-[120px] truncate">
             {userName}
           </span>
         )}
