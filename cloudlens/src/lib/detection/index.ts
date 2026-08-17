@@ -8,7 +8,9 @@
 export { SERVICE_REGISTRY, packageToService, envPrefixToService, configPatternToService, cicdReferenceToService } from "./registry";
 export type { ServiceDefinition, ServiceCategory, DetectionSource } from "./registry";
 
-export type { DetectionResult } from "./types";
+export type { DetectionResult, ScoredDetection } from "./types";
+
+export { getBaseScore, scoreAndDeduplicate } from "./scoring";
 
 export {
   parseDependencyFile,
