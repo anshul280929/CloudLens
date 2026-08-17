@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RepoCard } from "@/components/RepoCard";
 import { SkeletonRepoCard } from "@/components/SkeletonRepoCard";
-import { syncRepositories } from "@/app/actions";
+import { syncRepositories, scanRepositoryAction } from "@/app/actions";
 
 interface Repository {
   id: string;
@@ -87,6 +87,11 @@ export function RepositoryList({ initialRepos }: RepositoryListProps) {
   const [languageFilter, setLanguageFilter] = React.useState<string>("all");
   const [sortBy, setSortBy] = React.useState<string>("lastCommit");
 
+  // Track which repos are currently being scanned (optimistic UI)
+  const [scanningRepos, setScanningRepos] = React.useState<Set<string>>(
+    new Set()
+  );
+
   // Get unique languages for filter dropdown
   const uniqueLanguages = React.useMemo(() => {
     const langs = new Set<string>();
@@ -106,6 +111,32 @@ export function RepositoryList({ initialRepos }: RepositoryListProps) {
       alert("Failed to sync repositories. Please try again.");
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  /**
+   * Trigger a scan for a single repository.
+   * Optimistically sets the badge to "Scanning" with pulse,
+   * then refreshes the page data when the scan completes.
+   */
+  const handleScan = async (repoId: string) => {
+    // Optimistic: immediately show as scanning
+    setScanningRepos((prev) => new Set(prev).add(repoId));
+
+    try {
+      const result = await scanRepositoryAction(repoId);
+      // Refresh server data to pick up new scan status + service counts
+      router.refresh();
+    } catch (err) {
+      console.error("Scan failed:", err);
+      // Refresh anyway so the UI picks up the "failed" status from the DB
+      router.refresh();
+    } finally {
+      setScanningRepos((prev) => {
+        const next = new Set(prev);
+        next.delete(repoId);
+        return next;
+      });
     }
   };
 
@@ -151,6 +182,18 @@ export function RepositoryList({ initialRepos }: RepositoryListProps) {
 
     return result;
   }, [initialRepos, searchQuery, statusFilter, languageFilter, sortBy]);
+
+  /**
+   * Compute the effective scan status for a repo, taking into
+   * account the optimistic `scanningRepos` set.
+   */
+  const getEffectiveStatus = (
+    repo: Repository
+  ): "complete" | "scanning" | "failed" | "never-scanned" => {
+    if (scanningRepos.has(repo.id)) return "scanning";
+    if (repo.scanStatus === "pending") return "never-scanned";
+    return repo.scanStatus;
+  };
 
   return (
     <div className="space-y-6">
@@ -214,28 +257,49 @@ export function RepositoryList({ initialRepos }: RepositoryListProps) {
         </div>
       ) : filteredRepos.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRepos.map((repo) => (
-            <RepoCard
-              key={repo.id}
-              name={repo.name}
-              owner={repo.owner}
-              // Map db scanStatus pending -> never-scanned
-              status={
-                repo.scanStatus === "pending"
-                  ? "never-scanned"
-                  : repo.scanStatus
-              }
-              // Services detection not active yet, pass empty list
-              services={[]}
-              serviceCount={0}
-              updatedAt={formatTimeAgo(repo.lastScannedAt)}
-              onViewClick={() => {
-                if (repo.scanStatus !== "scanning") {
-                  router.push(`/repositories/${repo.id}`);
-                }
-              }}
-            />
-          ))}
+          {filteredRepos.map((repo) => {
+            const effectiveStatus = getEffectiveStatus(repo);
+            const isCurrentlyScanning = effectiveStatus === "scanning";
+
+            return (
+              <div key={repo.id} className="relative group">
+                <RepoCard
+                  name={repo.name}
+                  owner={repo.owner}
+                  status={effectiveStatus}
+                  // Services populated from detected services (future: pass real data)
+                  services={[]}
+                  serviceCount={0}
+                  updatedAt={
+                    isCurrentlyScanning
+                      ? "Scanning…"
+                      : formatTimeAgo(repo.lastScannedAt)
+                  }
+                  onViewClick={() => {
+                    if (!isCurrentlyScanning) {
+                      router.push(`/dashboard/repositories/${repo.id}`);
+                    }
+                  }}
+                />
+
+                {/* Scan Now button — shown when not currently scanning */}
+                {!isCurrentlyScanning && (
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleScan(repo.id);
+                      }}
+                    >
+                      {repo.scanStatus === "complete" ? "Re-scan" : "Scan Now"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : (
         /* Empty State */
@@ -289,3 +353,4 @@ export function RepositoryList({ initialRepos }: RepositoryListProps) {
     </div>
   );
 }
+

@@ -24,3 +24,7 @@ export {
   parseCicdFile,
   isCicdFile,
 } from "./parsers";
+
+export { scanRepository } from "./scanner";
+export type { ScanResult } from "./scanner";
+

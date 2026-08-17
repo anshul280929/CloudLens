@@ -173,13 +173,157 @@ assert(cicdServices.includes("Amazon S3"), "GitHub Action detects Amazon S3");
 assert(cicdServices.includes("Cloudflare Workers"), "GitHub Action detects Cloudflare Workers (wrangler-action)");
 
 // -------------------------------------------------------------
+// 6. Test Confidence Scoring (Task 4.7)
+// -------------------------------------------------------------
+console.log("\n🔍 6. Testing Confidence Scoring (Task 4.7)...");
+
+import { getBaseScore, scoreAndDeduplicate } from "./scoring";
+import type { DetectionResult } from "./types";
+
+assert(getBaseScore("import") === 0.9, "Base score: import → 0.9");
+assert(getBaseScore("dependency") === 0.85, "Base score: dependency → 0.85");
+assert(getBaseScore("config") === 0.8, "Base score: config → 0.8");
+assert(getBaseScore("cicd") === 0.7, "Base score: cicd → 0.7");
+assert(getBaseScore("envVar") === 0.5, "Base score: envVar → 0.5");
+
+// Single source — no boost
+const singleSource: DetectionResult[] = [
+  {
+    serviceName: "Stripe",
+    provider: "Stripe",
+    serviceCategory: "payments",
+    detectionSource: "import",
+    evidenceFile: "src/pay.ts",
+    evidenceSnippet: 'import Stripe from "stripe"',
+  },
+];
+const singleResult = scoreAndDeduplicate(singleSource);
+assert(singleResult.length === 1, "Single detection → 1 scored result");
+assert(singleResult[0].confidenceScore === 0.9, "Single import source → 0.9 score");
+assert(singleResult[0].allSources.length === 1, "Single source array length 1");
+
+// Multi-source boost — import + dependency + envVar = 0.9 + 0.05 + 0.05 = 1.0
+const multiSource: DetectionResult[] = [
+  {
+    serviceName: "Stripe",
+    provider: "Stripe",
+    serviceCategory: "payments",
+    detectionSource: "import",
+    evidenceFile: "src/pay.ts",
+    evidenceSnippet: 'import Stripe from "stripe"',
+  },
+  {
+    serviceName: "Stripe",
+    provider: "Stripe",
+    serviceCategory: "payments",
+    detectionSource: "dependency",
+    evidenceFile: "package.json",
+    evidenceSnippet: '"stripe": "^14.0.0"',
+  },
+  {
+    serviceName: "Stripe",
+    provider: "Stripe",
+    serviceCategory: "payments",
+    detectionSource: "envVar",
+    evidenceFile: ".env",
+    evidenceSnippet: 'STRIPE_SECRET_KEY="sk_test_123"',
+  },
+];
+const multiResult = scoreAndDeduplicate(multiSource);
+assert(multiResult.length === 1, "3 detections of same service → 1 result");
+assert(multiResult[0].confidenceScore === 1.0, "import(0.9) + 2 extra sources(+0.1) = 1.0 (capped)");
+assert(multiResult[0].allSources.length === 3, "All 3 sources recorded");
+assert(multiResult[0].detectionSource === "import", "Best source is import (highest base)");
+assert(multiResult[0].rawDetectionCount === 3, "Raw detection count = 3");
+
+// -------------------------------------------------------------
+// 7. Test Deduplication (Task 4.8)
+// -------------------------------------------------------------
+console.log("\n🔍 7. Testing Deduplication (Task 4.8)...");
+
+const mixedDetections: DetectionResult[] = [
+  // 2x Stripe (import + dependency)
+  {
+    serviceName: "Stripe",
+    provider: "Stripe",
+    serviceCategory: "payments",
+    detectionSource: "import",
+    evidenceFile: "src/pay.ts",
+    evidenceSnippet: 'import Stripe from "stripe"',
+  },
+  {
+    serviceName: "Stripe",
+    provider: "Stripe",
+    serviceCategory: "payments",
+    detectionSource: "dependency",
+    evidenceFile: "package.json",
+    evidenceSnippet: '"stripe": "^14.0.0"',
+  },
+  // 1x Sentry (envVar only)
+  {
+    serviceName: "Sentry",
+    provider: "Sentry",
+    serviceCategory: "monitoring",
+    detectionSource: "envVar",
+    evidenceFile: ".env",
+    evidenceSnippet: "SENTRY_DSN=https://abc@sentry.io/123",
+  },
+  // 1x Vercel (config only)
+  {
+    serviceName: "Vercel",
+    provider: "Vercel",
+    serviceCategory: "hosting",
+    detectionSource: "config",
+    evidenceFile: "vercel.json",
+    evidenceSnippet: "Config file detected: vercel.json",
+  },
+];
+const dedupResults = scoreAndDeduplicate(mixedDetections);
+assert(dedupResults.length === 3, "4 raw detections across 3 services → 3 results");
+
+// Sorted by confidence descending
+const [first, second, third] = dedupResults;
+assert(
+  first.confidenceScore >= second.confidenceScore &&
+    second.confidenceScore >= third.confidenceScore,
+  "Results sorted by confidence descending"
+);
+
+// Stripe should be highest: import(0.9) + dependency boost(+0.05) = 0.95
+const stripeResult = dedupResults.find((r) => r.serviceName === "Stripe")!;
+assert(stripeResult.confidenceScore === 0.95, "Stripe: 0.9 import + 0.05 boost = 0.95");
+
+// Sentry should be envVar only = 0.5
+const sentryResult = dedupResults.find((r) => r.serviceName === "Sentry")!;
+assert(sentryResult.confidenceScore === 0.5, "Sentry: envVar only = 0.5");
+
+// Vercel should be config only = 0.8
+const vercelResult = dedupResults.find((r) => r.serviceName === "Vercel")!;
+assert(vercelResult.confidenceScore === 0.8, "Vercel: config only = 0.8");
+
+// Cap at 1.0 test: 5 distinct sources → 0.9 + 4×0.05 = 1.1 → capped at 1.0
+const fiveSourceDetections: DetectionResult[] = (
+  ["import", "dependency", "config", "cicd", "envVar"] as const
+).map((src) => ({
+  serviceName: "Amazon S3",
+  provider: "AWS",
+  serviceCategory: "storage" as const,
+  detectionSource: src,
+  evidenceFile: `file-${src}`,
+  evidenceSnippet: `evidence from ${src}`,
+}));
+const cappedResult = scoreAndDeduplicate(fiveSourceDetections);
+assert(cappedResult[0].confidenceScore === 1.0, "5 sources → capped at 1.0 (not 1.1)");
+
+// -------------------------------------------------------------
 // Summary
 // -------------------------------------------------------------
 console.log("\n==================================================");
 console.log(`Test Results: ${passed}/${total} passed`);
 if (passed === total) {
-  console.log("🎉 All Task 4A parsers are functioning correctly!");
+  console.log("🎉 All Task 4A + 4B tests are passing!");
 } else {
   console.log("⚠️ Some tests failed. Check the details above.");
 }
 console.log("==================================================");
+
