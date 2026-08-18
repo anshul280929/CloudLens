@@ -24,3 +24,8 @@ export type { ServiceCardProps } from "./ServiceCard";
 
 export { ServiceList } from "./ServiceList";
 export type { AggregatedService } from "./ServiceList";
+
+export { ServiceEvidenceRow } from "./ServiceEvidenceRow";
+export type { ServiceEvidenceRowProps } from "./ServiceEvidenceRow";
+
+export { RescanButton } from "./RescanButton";
