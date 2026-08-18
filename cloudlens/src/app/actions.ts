@@ -218,3 +218,58 @@ export async function scanRepositoryAction(repoId: string) {
     throw new Error("Scan failed. Please try again.");
   }
 }
+
+// ---------------------------------------------------------------------------
+// Task 5A — scanAllRepositories
+// ---------------------------------------------------------------------------
+
+/**
+ * Server action that scans ALL of the current user's repositories
+ * that are not already in a "scanning" state.
+ *
+ * Repos are scanned sequentially to respect GitHub API rate limits.
+ * Returns a summary of how many repos were scanned successfully vs failed.
+ */
+export async function scanAllRepositories() {
+  const session = await auth();
+  if (!session?.user || !session.accessToken) {
+    throw new Error("Unauthorized");
+  }
+
+  let dbUserId = (session.user as any).id;
+  if (!dbUserId && session.user.email) {
+    const dbUser = await db.query.users.findFirst({
+      where: eq(users.email, session.user.email),
+    });
+    dbUserId = dbUser?.id;
+  }
+
+  if (!dbUserId) {
+    throw new Error("User not found in database");
+  }
+
+  // Fetch all repos for this user that are NOT currently scanning
+  const userRepos = await db
+    .select({ id: repositories.id })
+    .from(repositories)
+    .where(
+      sql`${repositories.userId} = ${dbUserId} AND ${repositories.scanStatus} != 'scanning'`,
+    );
+
+  let scanned = 0;
+  let failed = 0;
+
+  for (const repo of userRepos) {
+    try {
+      await scanRepositoryAction(repo.id);
+      scanned++;
+    } catch {
+      failed++;
+    }
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/repositories");
+
+  return { success: true, total: userRepos.length, scanned, failed };
+}

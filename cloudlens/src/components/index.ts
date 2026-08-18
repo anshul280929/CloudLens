@@ -15,3 +15,6 @@ export type { StatusBarProps } from "./StatusBar";
 
 export { FadeIn } from "./FadeIn";
 export { SkeletonRepoCard } from "./SkeletonRepoCard";
+
+export { StatCard } from "./StatCard";
+export type { StatCardProps } from "./StatCard";

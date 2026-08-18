@@ -349,3 +349,19 @@ body {
 .animate-spin {
   animation: spin 0.75s linear infinite;
 }
+
+@keyframes skeleton-shimmer {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+.animate-skeleton {
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
