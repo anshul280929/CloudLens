@@ -15,3 +15,17 @@ export type { StatusBarProps } from "./StatusBar";
 
 export { FadeIn } from "./FadeIn";
 export { SkeletonRepoCard } from "./SkeletonRepoCard";
+
+export { StatCard } from "./StatCard";
+export type { StatCardProps } from "./StatCard";
+
+export { ServiceCard } from "./ServiceCard";
+export type { ServiceCardProps } from "./ServiceCard";
+
+export { ServiceList } from "./ServiceList";
+export type { AggregatedService } from "./ServiceList";
+
+export { ServiceEvidenceRow } from "./ServiceEvidenceRow";
+export type { ServiceEvidenceRowProps } from "./ServiceEvidenceRow";
+
+export { RescanButton } from "./RescanButton";
