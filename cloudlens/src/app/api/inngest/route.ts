@@ -1,6 +1,11 @@
 import { serve } from "inngest/next";
 import { inngest } from "@/lib/inngest";
-import { repoScanFunction } from "@/lib/inngest/functions";
+import {
+  repoScanFunction,
+  alertsCheckInactivityFunction,
+  alertsCheckExpiryFunction,
+  alertsCheckOutagesFunction,
+} from "@/lib/inngest/functions";
 
 /**
  * Inngest serve route.
@@ -14,5 +19,10 @@ import { repoScanFunction } from "@/lib/inngest/functions";
  */
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [repoScanFunction],
+  functions: [
+    repoScanFunction,
+    alertsCheckInactivityFunction,
+    alertsCheckExpiryFunction,
+    alertsCheckOutagesFunction,
+  ],
 });
