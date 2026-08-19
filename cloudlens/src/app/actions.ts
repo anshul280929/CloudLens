@@ -1,12 +1,12 @@
 "use server";
 
 import { db } from "@/db";
-import { repositories, users, scans, detectedServices } from "@/db/schema";
+import { repositories, users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { getUserRepos } from "@/lib/github";
 import { revalidatePath } from "next/cache";
-import { scanRepository as runScan } from "@/lib/detection/scanner";
+import { inngest } from "@/lib/inngest";
 
 export async function syncRepositories() {
   const session = await auth();
@@ -80,28 +80,30 @@ export async function syncRepositories() {
 }
 
 // ---------------------------------------------------------------------------
-// Task 4.10 — scanRepositoryAction
+// Task 6A — scanRepositoryAction (Inngest-powered)
 // ---------------------------------------------------------------------------
 
 /**
- * Server action that scans a single repository for cloud services.
+ * Server action that triggers a background scan of a single repository.
  *
- * Workflow:
- *   1. Sets repo `scanStatus` to "scanning"
- *   2. Creates a new `scans` record
- *   3. Invokes the scan orchestrator
- *   4. Persists `detectedServices` results to the database
- *   5. Updates the scan record with completion status and counts
- *   6. Sets repo `scanStatus` to "complete" (or "failed" on error)
+ * Instead of running the scan inline (which can take 30+ seconds and
+ * block the server action), we now:
+ *   1. Optimistically set the repo status to "scanning" (so the UI
+ *      responds immediately)
+ *   2. Fire an Inngest event (`repo/scan.requested`) that triggers
+ *      the durable `repo-scan` function in the background
+ *   3. Return immediately
+ *
+ * The actual scan runs asynchronously with automatic retries and
+ * failure handling managed by Inngest.
  */
 export async function scanRepositoryAction(repoId: string) {
-  // ---- Auth ----
   const session = await auth();
-  if (!session?.user || !session.accessToken) {
+  if (!session?.user) {
     throw new Error("Unauthorized");
   }
 
-  // ---- Fetch the repository record ----
+  // Verify the repo exists
   const repo = await db.query.repositories.findFirst({
     where: eq(repositories.id, repoId),
   });
@@ -110,129 +112,38 @@ export async function scanRepositoryAction(repoId: string) {
     throw new Error("Repository not found");
   }
 
-  // ---- Step 1: Set status to "scanning" ----
+  // Optimistically set status to "scanning" so the UI updates instantly
   await db
     .update(repositories)
     .set({ scanStatus: "scanning", updatedAt: new Date() })
     .where(eq(repositories.id, repoId));
 
-  // ---- Step 2: Create a new scan record ----
-  const [scanRecord] = await db
-    .insert(scans)
-    .values({
-      repositoryId: repoId,
-      status: "scanning",
-      startedAt: new Date(),
-    })
-    .returning();
+  // Fire the Inngest event — the background function handles everything
+  await inngest.send({
+    name: "repo/scan.requested",
+    data: { repoId },
+  });
 
-  try {
-    // ---- Step 3: Invoke the scan orchestrator ----
-    const result = await runScan(
-      session.accessToken,
-      repo.owner,
-      repo.name,
-      repo.defaultBranch,
-    );
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/repositories");
 
-    // ---- Step 4: Persist detected services ----
-    if (result.services.length > 0) {
-      // Delete previous detections for this repo before inserting new ones
-      await db
-        .delete(detectedServices)
-        .where(eq(detectedServices.repositoryId, repoId));
-
-      // Insert in chunks (some repos may detect many services)
-      const CHUNK_SIZE = 50;
-      for (let i = 0; i < result.services.length; i += CHUNK_SIZE) {
-        const chunk = result.services.slice(i, i + CHUNK_SIZE);
-        await db.insert(detectedServices).values(
-          chunk.map((svc) => ({
-            scanId: scanRecord.id,
-            repositoryId: repoId,
-            serviceName: svc.serviceName,
-            serviceCategory: svc.serviceCategory,
-            provider: svc.provider,
-            confidenceScore: svc.confidenceScore,
-            detectionSource: svc.detectionSource,
-            evidenceFile: svc.evidenceFile,
-            evidenceLine: svc.evidenceLine,
-            evidenceSnippet: svc.evidenceSnippet,
-          })),
-        );
-      }
-    }
-
-    // ---- Step 5: Update the scan record ----
-    await db
-      .update(scans)
-      .set({
-        status: "complete",
-        completedAt: new Date(),
-        filesScanned: result.filesScanned,
-        servicesFound: result.servicesFound,
-      })
-      .where(eq(scans.id, scanRecord.id));
-
-    // ---- Step 6: Set repo status to "complete" ----
-    await db
-      .update(repositories)
-      .set({
-        scanStatus: "complete",
-        lastScannedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(repositories.id, repoId));
-
-    revalidatePath("/dashboard/repositories");
-
-    return {
-      success: true,
-      filesScanned: result.filesScanned,
-      servicesFound: result.servicesFound,
-    };
-  } catch (error) {
-    console.error(`[CloudLens] Scan failed for repo ${repoId}:`, error);
-
-    // ---- On failure: update scan & repo status ----
-    await db
-      .update(scans)
-      .set({
-        status: "failed",
-        completedAt: new Date(),
-        errorMessage:
-          error instanceof Error ? error.message : "Unknown scan error",
-      })
-      .where(eq(scans.id, scanRecord.id));
-
-    await db
-      .update(repositories)
-      .set({
-        scanStatus: "failed",
-        updatedAt: new Date(),
-      })
-      .where(eq(repositories.id, repoId));
-
-    revalidatePath("/dashboard/repositories");
-
-    throw new Error("Scan failed. Please try again.");
-  }
+  return { success: true, queued: true };
 }
 
 // ---------------------------------------------------------------------------
-// Task 5A — scanAllRepositories
+// Task 6A — scanAllRepositories (Inngest-powered)
 // ---------------------------------------------------------------------------
 
 /**
- * Server action that scans ALL of the current user's repositories
- * that are not already in a "scanning" state.
+ * Server action that triggers background scans for ALL of the current
+ * user's repositories that are not already in a "scanning" state.
  *
- * Repos are scanned sequentially to respect GitHub API rate limits.
- * Returns a summary of how many repos were scanned successfully vs failed.
+ * Fires an Inngest event for each repo — Inngest manages concurrency,
+ * retries, and rate limiting automatically.
  */
 export async function scanAllRepositories() {
   const session = await auth();
-  if (!session?.user || !session.accessToken) {
+  if (!session?.user) {
     throw new Error("Unauthorized");
   }
 
@@ -256,20 +167,29 @@ export async function scanAllRepositories() {
       sql`${repositories.userId} = ${dbUserId} AND ${repositories.scanStatus} != 'scanning'`,
     );
 
-  let scanned = 0;
-  let failed = 0;
-
-  for (const repo of userRepos) {
-    try {
-      await scanRepositoryAction(repo.id);
-      scanned++;
-    } catch {
-      failed++;
-    }
+  if (userRepos.length === 0) {
+    return { success: true, total: 0, queued: 0 };
   }
+
+  // Optimistically mark all repos as scanning
+  await db
+    .update(repositories)
+    .set({ scanStatus: "scanning", updatedAt: new Date() })
+    .where(
+      sql`${repositories.userId} = ${dbUserId} AND ${repositories.scanStatus} != 'scanning'`,
+    );
+
+  // Fire Inngest events for all repos
+  await inngest.send(
+    userRepos.map((repo) => ({
+      name: "repo/scan.requested" as const,
+      data: { repoId: repo.id },
+    })),
+  );
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/repositories");
 
-  return { success: true, total: userRepos.length, scanned, failed };
+  return { success: true, total: userRepos.length, queued: userRepos.length };
 }
+
