@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/db";
-import { repositories, users } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { repositories, users, alerts } from "@/db/schema";
+import { eq, sql, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { getUserRepos } from "@/lib/github";
 import { revalidatePath } from "next/cache";
@@ -193,3 +193,78 @@ export async function scanAllRepositories() {
   return { success: true, total: userRepos.length, queued: userRepos.length };
 }
 
+// ---------------------------------------------------------------------------
+// Task 6.9 — Alert Actions
+// ---------------------------------------------------------------------------
+
+/** Verify that the alert belongs to the current user before mutating. */
+async function getAuthenticatedAlert(alertId: string) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Unauthorized");
+
+  let dbUserId = (session.user as any).id;
+  if (!dbUserId && session.user.email) {
+    const dbUser = await db.query.users.findFirst({
+      where: eq(users.email, session.user.email),
+    });
+    dbUserId = dbUser?.id;
+  }
+  if (!dbUserId) throw new Error("User not found");
+
+  const alert = await db.query.alerts.findFirst({
+    where: and(eq(alerts.id, alertId), eq(alerts.userId, dbUserId)),
+  });
+  if (!alert) throw new Error("Alert not found");
+
+  return alert;
+}
+
+/** Dismiss an alert (status → dismissed). */
+export async function dismissAlert(alertId: string) {
+  await getAuthenticatedAlert(alertId);
+  await db
+    .update(alerts)
+    .set({ status: "dismissed", updatedAt: new Date() })
+    .where(eq(alerts.id, alertId));
+  revalidatePath("/dashboard/alerts");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+/** Snooze an alert for 7 days (status → snoozed). */
+export async function snoozeAlert(alertId: string) {
+  await getAuthenticatedAlert(alertId);
+  const snoozedUntil = new Date();
+  snoozedUntil.setDate(snoozedUntil.getDate() + 7);
+  await db
+    .update(alerts)
+    .set({ status: "snoozed", snoozedUntil, updatedAt: new Date() })
+    .where(eq(alerts.id, alertId));
+  revalidatePath("/dashboard/alerts");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+/** Mark an alert as resolved. */
+export async function resolveAlert(alertId: string) {
+  await getAuthenticatedAlert(alertId);
+  await db
+    .update(alerts)
+    .set({ status: "resolved", updatedAt: new Date() })
+    .where(eq(alerts.id, alertId));
+  revalidatePath("/dashboard/alerts");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+/** "I cancelled this service" — resolves the alert with a cancelled note. */
+export async function cancelServiceAlert(alertId: string) {
+  await getAuthenticatedAlert(alertId);
+  await db
+    .update(alerts)
+    .set({ status: "resolved", updatedAt: new Date() })
+    .where(eq(alerts.id, alertId));
+  revalidatePath("/dashboard/alerts");
+  revalidatePath("/dashboard");
+  return { success: true };
+}

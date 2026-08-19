@@ -5,6 +5,7 @@ import {
   alertsCheckInactivityFunction,
   alertsCheckExpiryFunction,
   alertsCheckOutagesFunction,
+  emailMonthlyDigestFunction,
 } from "@/lib/inngest/functions";
 
 /**
@@ -24,5 +25,6 @@ export const { GET, POST, PUT } = serve({
     alertsCheckInactivityFunction,
     alertsCheckExpiryFunction,
     alertsCheckOutagesFunction,
+    emailMonthlyDigestFunction,
   ],
 });

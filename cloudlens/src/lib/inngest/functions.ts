@@ -9,8 +9,11 @@
 import { inngest } from "@/lib/inngest";
 import { db } from "@/db";
 import { repositories, scans, detectedServices, accounts, alerts, users } from "@/db/schema";
-import { eq, and, lt, sql, ne } from "drizzle-orm";
+import { eq, and, lt, sql, ne, gte, desc } from "drizzle-orm";
 import { scanRepository as runScan } from "@/lib/detection/scanner";
+import { resend, EMAIL_FROM } from "@/lib/resend";
+import { render } from "react-email";
+import { MonthlyDigest } from "@/emails/MonthlyDigest";
 
 // ---------------------------------------------------------------------------
 // repo.scan — Background repository scan
@@ -583,6 +586,154 @@ export const alertsCheckOutagesFunction = inngest.createFunction(
       }
 
       return { providers: STATUSPAGE_ENDPOINTS.length, created, resolved, errors };
+    });
+
+    return results;
+  },
+);
+
+// ---------------------------------------------------------------------------
+// email.monthly-digest — Monthly email digest on the 1st of each month
+// ---------------------------------------------------------------------------
+
+/**
+ * Sends a personalized monthly cloud service digest email to every user
+ * who has at least one successfully scanned repository.
+ *
+ * Runs at 08:00 UTC on the 1st of every month.
+ */
+export const emailMonthlyDigestFunction = inngest.createFunction(
+  {
+    id: "email-monthly-digest",
+    name: "Monthly Email Digest",
+    retries: 2,
+    triggers: [{ cron: "0 8 1 * *" }], // 08:00 UTC on 1st of month
+  },
+  async ({ step }) => {
+    const results = await step.run("send-digests", async () => {
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const monthLabel = now.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      });
+
+      // Get all users with at least one scanned repo
+      const eligibleUsers = await db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+        })
+        .from(users)
+        .innerJoin(repositories, eq(repositories.userId, users.id))
+        .where(eq(repositories.scanStatus, "complete"))
+        .groupBy(users.id, users.name, users.email);
+
+      let sent = 0;
+      let skipped = 0;
+      let errors = 0;
+
+      for (const user of eligibleUsers) {
+        if (!user.email) { skipped++; continue; }
+
+        try {
+          // Fetch total services + repos for this user
+          const [serviceRows, repoRows] = await Promise.all([
+            db
+              .select({ id: detectedServices.id })
+              .from(detectedServices)
+              .innerJoin(repositories, eq(detectedServices.repositoryId, repositories.id))
+              .where(eq(repositories.userId, user.id)),
+            db
+              .select({ id: repositories.id })
+              .from(repositories)
+              .where(and(eq(repositories.userId, user.id), eq(repositories.scanStatus, "complete"))),
+          ]);
+
+          if (serviceRows.length === 0) { skipped++; continue; }
+
+          // Active alerts for this user
+          const activeAlertRows = await db
+            .select({
+              id: alerts.id,
+              title: alerts.title,
+              severity: alerts.severity,
+              type: alerts.type,
+            })
+            .from(alerts)
+            .where(and(eq(alerts.userId, user.id), eq(alerts.status, "active")))
+            .orderBy(desc(alerts.createdAt))
+            .limit(10);
+
+          // New detections in the last 30 days
+          const newDetectionRows = await db
+            .select({
+              serviceName: detectedServices.serviceName,
+              provider: detectedServices.provider,
+              serviceCategory: detectedServices.serviceCategory,
+              confidenceScore: detectedServices.confidenceScore,
+            })
+            .from(detectedServices)
+            .innerJoin(repositories, eq(detectedServices.repositoryId, repositories.id))
+            .where(
+              and(
+                eq(repositories.userId, user.id),
+                gte(detectedServices.createdAt, thirtyDaysAgo),
+              ),
+            )
+            .orderBy(desc(detectedServices.confidenceScore))
+            .limit(10);
+
+          // Services needing attention (active warning/critical alerts)
+          const servicesNeedingAttention = activeAlertRows
+            .filter((a) => a.severity === "warning" || a.severity === "critical")
+            .map((a) => ({
+              title: a.title,
+              severity: a.severity as "warning" | "critical",
+              type: a.type,
+            }));
+
+          const html = await render(
+            MonthlyDigest({
+              userName: user.name ?? "there",
+              userEmail: user.email,
+              monthLabel,
+              totalServices: serviceRows.length,
+              totalRepositories: repoRows.length,
+              activeAlerts: activeAlertRows.length,
+              newDetections: newDetectionRows.map((d) => ({
+                serviceName: d.serviceName,
+                provider: d.provider,
+                category: d.serviceCategory,
+                confidenceScore: d.confidenceScore,
+              })),
+              servicesNeedingAttention,
+            }),
+          );
+
+          const { error } = await resend.emails.send({
+            from: EMAIL_FROM,
+            to: user.email,
+            subject: `Your CloudLens Digest · ${monthLabel}`,
+            html,
+          });
+
+          if (error) {
+            console.error(`[CloudLens] Failed to send digest to ${user.email}:`, error);
+            errors++;
+          } else {
+            sent++;
+          }
+        } catch (err) {
+          console.error(`[CloudLens] Error sending digest to ${user.email}:`, err);
+          errors++;
+        }
+      }
+
+      return { total: eligibleUsers.length, sent, skipped, errors };
     });
 
     return results;

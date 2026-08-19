@@ -12,10 +12,12 @@ export function DashboardShell({
   children,
   userName,
   userImage,
+  notificationBell,
 }: {
   children: React.ReactNode;
   userName?: string | null;
   userImage?: string | null;
+  notificationBell?: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
@@ -33,6 +35,7 @@ export function DashboardShell({
           userName={userName}
           userImage={userImage}
           onMenuClick={() => setMobileOpen(true)}
+          notificationBell={notificationBell}
         />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>

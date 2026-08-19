@@ -67,9 +67,11 @@ export interface HeaderProps {
   userImage?: string | null;
   /** Mobile sidebar toggle callback */
   onMenuClick?: () => void;
+  /** Notification bell slot (server component passed from layout) */
+  notificationBell?: React.ReactNode;
 }
 
-export function Header({ userName, userImage, onMenuClick }: HeaderProps) {
+export function Header({ userName, userImage, onMenuClick, notificationBell }: HeaderProps) {
   const title = usePageTitle();
 
   return (
@@ -100,12 +102,14 @@ export function Header({ userName, userImage, onMenuClick }: HeaderProps) {
       </div>
 
       {/* Notification bell */}
-      <button
-        className="flex items-center justify-center w-10 h-10 rounded-md text-ink-muted hover:text-ink hover:bg-surface-2 border border-transparent hover:border-[rgba(178,182,189,0.1)] transition-colors"
-        aria-label="Notifications"
-      >
-        <BellIcon />
-      </button>
+      {notificationBell ?? (
+        <button
+          className="flex items-center justify-center w-10 h-10 rounded-md text-ink-muted hover:text-ink hover:bg-surface-2 border border-transparent hover:border-[rgba(178,182,189,0.1)] transition-colors"
+          aria-label="Notifications"
+        >
+          <BellIcon />
+        </button>
+      )}
 
       {/* User avatar + name */}
       <div className="flex items-center gap-2 pl-1">
